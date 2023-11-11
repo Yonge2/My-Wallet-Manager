@@ -1,10 +1,14 @@
-import { Controller, Get, Post, Body, Header } from '@nestjs/common'
+import { Controller, Get, Post, Body, Header, HttpCode, Headers } from '@nestjs/common'
 import { UserService } from './user.service'
 import { SignupDto, LoginDto } from './dto/user.dto'
+import { AuthService } from './auth.service'
 
 @Controller('user')
 export class UserController {
-  constructor(private readonly userService: UserService) {}
+  constructor(
+    private readonly userService: UserService,
+    private readonly authService: AuthService,
+  ) {}
 
   @Post('/signup')
   signup(@Body() signupDto: SignupDto) {
@@ -13,16 +17,18 @@ export class UserController {
   }
 
   @Post('/login')
+  @HttpCode(200)
   login(@Body() loginDto: LoginDto) {
     return this.userService.login(loginDto)
   }
 
-  //todo jwt
   @Get('/auth/access')
-  @Header('user', 'jwtPayload')
-  recreateAccessToken() {}
+  recreateAccessToken(@Headers('authorization') authorization: string, @Headers('refresh') refresh: string) {
+    return this.authService.createNewAccessToken(authorization, refresh)
+  }
 
   @Get('/auth/refresh')
-  @Header('user', 'jwtPayload')
-  recreateRefreshToken() {}
+  recreateRefreshToken(@Headers('authorization') authorization: string, @Headers('refresh') refresh: string) {
+    return this.authService.createNewRefreshToken(authorization, refresh)
+  }
 }
