@@ -4,6 +4,7 @@ import { Repository } from 'typeorm'
 import { InjectRepository } from '@nestjs/typeorm'
 import { User } from 'src/db/entity/user.entity'
 import * as bcrypt from 'bcrypt'
+import { createAccessToken, createRefreshToken } from 'src/authorization/jwtUtils'
 
 @Injectable()
 export class UserService {
@@ -34,13 +35,12 @@ export class UserService {
     }
   }
 
+  //로그인 (회원확인 -> 토큰 발급)
   async login(loginDto: LoginDto) {
     const userInfo = await this.userRepo.findOne({
       select: ['id', 'password', 'name'],
       where: { email: loginDto.email },
     })
-
-    console.log(userInfo)
 
     if (!userInfo) throw new HttpException('잘못된 로그인 정보', HttpStatus.NOT_FOUND)
 
@@ -48,7 +48,15 @@ export class UserService {
 
     if (!isPwResult) throw new HttpException('잘못된 로그인 정보', HttpStatus.NOT_FOUND)
 
-    return //jwt
+    const { password: _password, ...jwtInfo } = userInfo
+
+    const accessToken = createAccessToken(jwtInfo)
+    const refreshToken = await createRefreshToken(jwtInfo.id)
+
+    return {
+      accessToken: accessToken,
+      refreshToken: refreshToken,
+    }
   }
 }
 
