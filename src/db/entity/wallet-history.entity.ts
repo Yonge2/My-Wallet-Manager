@@ -1,7 +1,7 @@
 import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, ManyToOne } from 'typeorm'
 import { User } from './user.entity'
 
-@Entity({ name: 'wallet-history' })
+@Entity({ name: 'wallet_history' })
 export class WalletHistory {
   @PrimaryGeneratedColumn()
   id: number

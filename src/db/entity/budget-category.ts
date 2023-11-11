@@ -1,6 +1,6 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn } from 'typeorm'
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn } from 'typeorm'
 
-@Entity({ name: 'budget-category' })
+@Entity({ name: 'budget_category' })
 export class BudgetCategory {
   @PrimaryGeneratedColumn()
   id: number
@@ -10,7 +10,4 @@ export class BudgetCategory {
 
   @CreateDateColumn()
   createdAt: Date
-
-  @UpdateDateColumn()
-  updatedAt: Date
 }

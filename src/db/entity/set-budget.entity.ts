@@ -9,7 +9,7 @@ import {
 } from 'typeorm'
 import { User } from './user.entity'
 
-@Entity({ name: 'set-budget' })
+@Entity({ name: 'set_budget' })
 export class SetBudget {
   @PrimaryGeneratedColumn()
   id: number
@@ -20,8 +20,10 @@ export class SetBudget {
   @Column({ nullable: false })
   total_amount: number
 
-  @Column({ nullable: false })
-  budget_field: number
+  @Column('simple-json', { nullable: false })
+  budget_field: {
+    [key: string]: number
+  }
 
   @CreateDateColumn()
   createdAt: Date

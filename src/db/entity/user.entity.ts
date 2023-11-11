@@ -1,13 +1,4 @@
-import {
-  Entity,
-  Column,
-  PrimaryGeneratedColumn,
-  CreateDateColumn,
-  UpdateDateColumn,
-  OneToMany,
-  OneToOne,
-  JoinColumn,
-} from 'typeorm'
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, OneToMany, OneToOne, JoinColumn } from 'typeorm'
 import { WalletHistory } from './wallet-history.entity'
 import { SetBudget } from './set-budget.entity'
 
@@ -16,7 +7,7 @@ export class User {
   @PrimaryGeneratedColumn()
   id: number
 
-  @Column({ length: 30 }) //unique: true로 변경
+  @Column({ length: 30, unique: true }) //unique: true로 변경
   email: string
 
   @Column({ length: 255 })
@@ -27,9 +18,6 @@ export class User {
 
   @CreateDateColumn()
   createdAt: Date
-
-  @UpdateDateColumn()
-  updatedAt: Date
 
   @OneToMany(() => WalletHistory, (walletHistory) => walletHistory.user)
   wallethistories: WalletHistory[]
