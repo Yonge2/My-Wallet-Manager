@@ -3,8 +3,8 @@ import { JwtUserInfo } from './jwt.dto'
 import redisClient from 'src/utils/redis'
 
 const SECRET_KEY = process.env.JWT_SECRECT_KEY || ('secret' as string)
-const AT_EXPIRED = process.env.AT_EXPIRE || ('1m' as string)
-const RT_EXPIRED = process.env.RT_EXPIRE || ('3m' as string)
+const AT_EXPIRED = process.env.AT_EXPIRE || ('1h' as string)
+const RT_EXPIRED = process.env.RT_EXPIRE || ('1h' as string)
 const RT_EXPIRED_BY_NUMBER = 60 * 60 * 24 * Number(process.env.RT_EXPIRED_BY_NUMBER || 1)
 
 export const createAccessToken = (user: JwtUserInfo): string => {
@@ -57,7 +57,3 @@ export const verifyRefreshToken = async (refreshToken: string, userId: number) =
   }
   return false
 }
-
-// eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE2OTk3MDY0MDYsImV4cCI6MTY5OTcwNjU4Nn0.mHMTQNbOjntdY_Sd5nRKYkVeC4lZlpUKXrySKoOWPyA
-
-// eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE2OTk3MDY0MzgsImV4cCI6MTY5OTcwNjYxOH0.iyQIKS25dtyWVhSxo6aKK8G_nWNXHHP5VpMMtZSe-Gg

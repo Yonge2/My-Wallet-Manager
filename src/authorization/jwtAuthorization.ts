@@ -1,7 +1,7 @@
-import { Response, NextFunction } from 'express'
+import { Request, Response, NextFunction } from 'express'
 import { verifyToken } from './jwtUtils'
 
-export default (req: any, res: Response, next: NextFunction) => {
+export default (req: Request, res: Response, next: NextFunction) => {
   const accessToken = req.headers.authorization
 
   if (!accessToken) {
@@ -14,6 +14,7 @@ export default (req: any, res: Response, next: NextFunction) => {
     return res.status(401).json({ error: '유효하지 않은 토큰' })
   }
 
-  req.user = verifiedToken.payload
+  const { iat: _iat, exp: _exp, ...payload } = verifiedToken.payload
+  req['user'] = payload
   return next()
 }
