@@ -14,7 +14,7 @@ export class SetBudget {
   @PrimaryGeneratedColumn()
   id: number
 
-  @Column({ nullable: false })
+  @Column({ nullable: false, unique: true })
   user_id: number
 
   @Column({ nullable: false })
