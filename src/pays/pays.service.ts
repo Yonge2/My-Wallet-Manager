@@ -6,6 +6,7 @@ import { JwtUserInfo } from 'src/authorization/jwt.dto'
 import { InjectRepository } from '@nestjs/typeorm'
 import { WalletHistory } from 'src/db/entity/wallet-history.entity'
 import { Repository } from 'typeorm'
+import * as dayjs from 'dayjs'
 
 @Injectable()
 export class PaysService {
@@ -23,6 +24,7 @@ export class PaysService {
 
     try {
       const insertPay = await this.walletHistoryRepo.save(newPay)
+      if (!insertPay) throw new HttpException('잘못된 요청', HttpStatus.BAD_REQUEST)
       return
     } catch (e) {
       console.log(e)
@@ -33,22 +35,32 @@ export class PaysService {
   findPays = async (req: Request, res: Response) => {
     const userId = req['user'].id as number
     const querys = req.query
-    const whereOption = getWhereOptions(querys, userId)
-    console.log(whereOption)
+    const { start, end, max, min, category, page } = getWhereOptions(querys)
 
-    //페이징 및 기본값 설정해야함
-    const a = await this.walletHistoryRepo
-      .createQueryBuilder('wallet_history')
-      .where('wallet_history.createdAt >= :start', { start: whereOption.start })
-      .andWhere('wallet_history.createdAt <= :end', { end: whereOption.end })
-      .andWhere('wallet_history.category = :category', { category: whereOption.category })
-      .andWhere('wallet_history.amount <= :max', { max: whereOption.max })
-      .andWhere('wallet_history.amount >= :min', { min: whereOption.min })
-      .execute()
+    try {
+      const pays = this.walletHistoryRepo
+        .createQueryBuilder()
+        .select(['category as category', 'amount as amount', 'createdAt as createdAt'])
+        .where('user_id = :userId', { userId })
+        .andWhere('createdAt >= :start', { start })
+        .andWhere('createdAt <= :end', { end })
+        .andWhere('amount <= :max', { max })
+        .andWhere('amount >= :min', { min })
 
-    console.log(a)
-    res.status(200)
-    return
+      if (category) {
+        pays.andWhere('category = :category', { category: category })
+      }
+
+      const result = await pays
+        .offset((page - 1) * 20)
+        .limit(20)
+        .execute()
+
+      res.status(200).json({ body: result })
+    } catch (e) {
+      console.log('getPays err ', e)
+      res.status(400).json({ error: '잘못된 요청' })
+    }
   }
 
   findPay = async (user: JwtUserInfo, id: number) => {
@@ -82,19 +94,33 @@ export class PaysService {
     }
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} pay`
+  removePay = async (id: number, user: JwtUserInfo) => {
+    try {
+      const deleteResult = await this.walletHistoryRepo.delete({ id: id, user_id: user.id })
+
+      if (!deleteResult) throw new HttpException('잘못된 요청', HttpStatus.BAD_REQUEST)
+
+      return
+    } catch (e) {
+      console.log(e)
+      throw new HttpException('잘못된 요청', HttpStatus.BAD_REQUEST)
+    }
   }
 }
 
-const getWhereOptions = (querys: any, userId: number): GetWhereOption => {
-  const whereOption: GetWhereOption = { user_id: userId }
+const getWhereOptions = (querys: any): GetWhereOption => {
+  //2023-11-13 22:16:04
+  return {
+    //default 7 days
+    end: querys.end ? querys.end : dayjs().format('YYYY-MM-DD'),
+    start: querys.start ? querys.start : dayjs().subtract(7, 'd').format('YYYY-MM-DD'),
 
-  if (querys.start) whereOption.start = querys.start as Date
-  if (querys.end) whereOption.end = querys.end as Date
-  if (querys.max) whereOption.max = querys.max as number
-  if (querys.min) whereOption.min = querys.min as number
-  if (querys.category) whereOption.category = querys.category
+    //defualt 0~100만
+    max: querys.max ? +querys.max : 1000000,
+    min: querys.min ? +querys.min : 0,
 
-  return whereOption
+    category: querys.category ? querys.category : undefined,
+
+    page: querys.page ? +querys.page : 1,
+  }
 }

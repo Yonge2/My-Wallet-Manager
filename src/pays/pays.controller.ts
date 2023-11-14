@@ -33,7 +33,7 @@ export class PaysController {
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.paysService.remove(+id)
+  remove(@Param('id') id: string, @User() user: JwtUserInfo) {
+    return this.paysService.removePay(+id, user)
   }
 }

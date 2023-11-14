@@ -10,10 +10,10 @@ export class InsertPayDto {
 export class CreatePayDto extends OmitType(InsertPayDto, ['user_id'] as const) {}
 
 export interface GetWhereOption {
-  user_id: number
-  start?: Date
-  end?: Date
+  start?: string
+  end?: string
   max?: number
   min?: number
   category?: string
+  page?: number
 }
