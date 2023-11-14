@@ -5,14 +5,16 @@ import { ConfigModule } from '@nestjs/config'
 import jwtAuthorization from './authorization/jwtAuthorization'
 import { BudgetsModule } from './budgets/budgets.module'
 import { BudgetsController } from './budgets/budgets.controller'
+import { PaysModule } from './pays/pays.module'
+import { PaysController } from './pays/pays.controller'
 
 @Module({
-  imports: [UserModule, DbModule, ConfigModule.forRoot({ isGlobal: true }), BudgetsModule],
+  imports: [UserModule, DbModule, ConfigModule.forRoot({ isGlobal: true }), BudgetsModule, PaysModule],
 })
 
 // 미들웨어 작창 방법 예시
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(jwtAuthorization).forRoutes(BudgetsController)
+    consumer.apply(jwtAuthorization).forRoutes(BudgetsController, PaysController)
   }
 }
