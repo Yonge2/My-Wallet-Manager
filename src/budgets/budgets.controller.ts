@@ -26,7 +26,6 @@ export class BudgetsController {
     return this.budgetsService.updateBudget(user, updateBudgetDto)
   }
 
-  //todo
   @Get('/recommend')
   recommend() {
     return this.budgetsService.recommendBudget()
