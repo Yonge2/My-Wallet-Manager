@@ -7,9 +7,10 @@ import { BudgetsModule } from './budgets/budgets.module'
 import { BudgetsController } from './budgets/budgets.controller'
 import { PaysModule } from './pays/pays.module'
 import { PaysController } from './pays/pays.controller'
+import { AlramModule } from './alram/alram.module'
 
 @Module({
-  imports: [UserModule, DbModule, ConfigModule.forRoot({ isGlobal: true }), BudgetsModule, PaysModule],
+  imports: [UserModule, DbModule, ConfigModule.forRoot({ isGlobal: true }), BudgetsModule, PaysModule, AlramModule],
 })
 
 // 미들웨어 작창 방법 예시
