@@ -1,6 +1,6 @@
 # My-Wallet-Manager
 
-<p align="center"> <img src="https://github.com/Yonge2/My-Wallet-Manager/assets/99579139/0af17468-2c58-4e5d-9cd1-2e765baefab7" width="300" height="300"/> </p>
+<p align="center"> <img src="https://github.com/Yonge2/My-Wallet-Manager/assets/99579139/0af17468-2c58-4e5d-9cd1-2e765baefab7" width="450" height="450"/> </p>
 
 본 서비스는 사용자들이 개인 재무를 관리하고 지출을 추적하는 데 도움을 주는 애플리케이션입니다. 이 앱은 **사용자들이 예산을 설정**하고 **지출을 모니터링**하며 재무 목표를 달성하는 데 도움이 됩니다.
 
