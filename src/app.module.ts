@@ -8,14 +8,24 @@ import { BudgetsController } from './budgets/budgets.controller'
 import { PaysModule } from './pays/pays.module'
 import { PaysController } from './pays/pays.controller'
 import { AlramModule } from './alram/alram.module'
+import { StasticsModule } from './stastics/stastics.module'
+import { StasticsController } from './stastics/stastics.controller'
 
 @Module({
-  imports: [UserModule, DbModule, ConfigModule.forRoot({ isGlobal: true }), BudgetsModule, PaysModule, AlramModule],
+  imports: [
+    UserModule,
+    DbModule,
+    ConfigModule.forRoot({ isGlobal: true }),
+    BudgetsModule,
+    PaysModule,
+    AlramModule,
+    StasticsModule,
+  ],
 })
 
 // 미들웨어 작창 방법 예시
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(jwtAuthorization).forRoutes(BudgetsController, PaysController)
+    consumer.apply(jwtAuthorization).forRoutes(BudgetsController, PaysController, StasticsController)
   }
 }
