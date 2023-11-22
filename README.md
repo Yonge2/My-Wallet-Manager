@@ -4,15 +4,11 @@
 
 본 서비스는 사용자들이 개인 재무를 관리하고 지출을 추적하는 데 도움을 주는 애플리케이션입니다. 이 앱은 **사용자들이 예산을 설정**하고 **지출을 모니터링**하며 재무 목표를 달성하는 데 도움이 됩니다.
 
-## 주요 기술
+## 사용 기술
 
-<img src="https://img.shields.io/badge/Node.js-339933?style=flat-square&logo=Node.js&logoColor=white"/>
-<img src="https://img.shields.io/badge/Typescript-3178C6?style=flat-square&logo=Typescript&logoColor=white"/>
-<img src="https://img.shields.io/badge/nestjs-E0234E?style=flat-square&logo=nestjs&logoColor=white"/>
+<img src="https://img.shields.io/badge/Node.js-339933?style=flat-square&logo=Node.js&logoColor=white"/> <img src="https://img.shields.io/badge/Typescript-3178C6?style=flat-square&logo=Typescript&logoColor=white"/> <img src="https://img.shields.io/badge/nestjs-E0234E?style=flat-square&logo=nestjs&logoColor=white"/>
 
-<img src="https://img.shields.io/badge/MySQL-4479A1?style=flat-square&logo=MySQL&logoColor=white"/>
-<img src="https://img.shields.io/badge/TypeORM-000000?style=flat-square&logo=&logoColor=white"/>
-<img src="https://img.shields.io/badge/Redis-DC382D?style=flat-square&logo=Redis&logoColor=white"/>
+<img src="https://img.shields.io/badge/MySQL-4479A1?style=flat-square&logo=MySQL&logoColor=white"/> <img src="https://img.shields.io/badge/TypeORM-000000?style=flat-square&logo=&logoColor=white"/> <img src="https://img.shields.io/badge/Redis-DC382D?style=flat-square&logo=Redis&logoColor=white"/>
 
 <img src="https://img.shields.io/badge/JWT-000000?style=flat-square&logo=jsonwebtokens&logoColor=white"/>
 
@@ -42,23 +38,91 @@
 
 ![mywallet-erd](https://github.com/Yonge2/My-Wallet-Manager/assets/99579139/91d15f06-5ce3-470b-960e-4d7c049be3b1)
 
-## 구현
+## 구현과 로직
+
+간단한 구현 의도와 함께 순서도를 확인할 수 있습니다.
+
+### <로그인>
+
+- 로그인으로 토큰을 발급합니다. <br>
+   <details>
+   <summary>예산 설정 순서도 보기 - click</summary>
+
+  ![로그인](https://github.com/Yonge2/My-Wallet-Manager/assets/99579139/aa7698a1-90b7-4859-aeda-61ad7fa9b2e9)
+  </details>
+
+### <인증 작업>
+
+- 접근 권한이 필요한 작업에는 토큰 검증 미들웨어를 사용
+  <details>
+   <summary>예산 설정 순서도 보기 - click</summary>
+
+  ![토큰검증](https://github.com/Yonge2/My-Wallet-Manager/assets/99579139/07dd5159-47da-4a6a-8b0f-b6d967e77d09)
+  </details>
+
+### <예산 설정>
+
+- 사용자가 예산을 수동으로 설정합니다.
+- 참여한 인원에 따라 설정한 총 예산과 각 항목에 가중치를 부여하여 평균을 계산하여 redis에 저장합니다. (이후, 예산 추천을 위한 데이터)
+- 유저 평균은 하나의 데이터이기 떄문에 stringify로 string 형태로 저장했습니다.
+- 장점 : 추가 DB 작업이 필요없음, 이후 작업이 상당히 빠름
+- 단점 : 서버가 꺼지면, 크리티컬한 문제가 발생. -> 이후, DB에 저장하거나 직접 통계 구하는 방법 추가 예정.
+
+  <details>
+  <summary>예산 설정 순서도 보기 - click</summary>
+
+  ![예산 설정](https://github.com/Yonge2/My-Wallet-Manager/assets/99579139/6b36ba2c-a01e-47b3-bc4d-a11ee347d473)
+  </details>
+
+### <예산 추천>
+
+- 예산 설정 시, 캐싱된 데이터를 사용합니다.
+- <예산 설정>의 문제점과 마찬가지로, 이후 서버 꺼졌을 때를 대비 해야합니다.
+  <details>
+  <summary>예산 추천 순서도 보기 - click</summary>
+
+  ![예산 추천](https://github.com/Yonge2/My-Wallet-Manager/assets/99579139/76bfe9db-5062-4e36-9e59-951dad0d9568)
+  </details>
+
+### <알림>
+
+![email_1](https://github.com/Yonge2/My-Wallet-Manager/assets/99579139/39b6210f-6cca-4a9c-85a8-1fa8be1ba396)
+
+#### 오전 8시 - 오늘의 권장 예산 알림
+
+![email_2](https://github.com/Yonge2/My-Wallet-Manager/assets/99579139/21ce00bc-d409-414d-9162-db995b43a83c)
+
+- 사용자의 Email로 { 이번달 설정 예산, 이번달 사용한 금액, 금일 사용 권장 금액 }을 발송합니다.
+- 금일 사용권장 금액은 (총예산-사용예산)/남은일수로 계산하며, 일정치 이하로 남았을 경우, 최소금액을 발송합니다.
+- 권장금액을 목표금액으로 설정하고 redis에 캐싱합니다. (삭제 주기는 오후 8시 이후)
+
+#### 오후 8시 - 오늘의 지출 결산 알림
+
+![email_3](https://github.com/Yonge2/My-Wallet-Manager/assets/99579139/b9f7b71c-8f9f-4c09-a7d0-14d3e62d7a99)
+
+- 사용자의 Email로 { 금일 목표 금액, 금일 사용 금액, 위험도 }를 발송합니다.
+- 위험도는 사용 금액/목표 금액의 백분율로 계산합니다.
+- 목표 금액은 유저마다 redis에 캐싱된 데이터를 이용합니다.
 
 <details>
-<summary>JWT 순서도 - click</summary>
- - TBD
+  <summary>권장 예산 알림 및 결산 알림 순서도 보기 - click</summary>
+
+![스케줄러](https://github.com/Yonge2/My-Wallet-Manager/assets/99579139/9b2c5df5-9be4-4d30-aa1c-04b4e8367849)
+
 </details>
-<details>
-<summary>예산 설정 추천 - click</summary>
- - TBD
-</details>
-<details>
-<summary>지출 알림 - click</summary>
- - TBD
-</details>
-<details>
-<summary>지출 통계 - click</summary>
- - TBD
-</details>
+
+### <지출 통계>
+
+- path param을 이용하여, bymonth, byweek, byuser 로 통계를 볼 수 있습니다.
+- bymonth : (이번 달의 오늘까지 쓴 금액 / 지난 달의 오늘까지 쓴 금액) 의 백분율
+- byweek : (오늘 쓴 금액 / 여태까지 지난 요일들의 쓴 금액의 평균) 의 백분율
+- byuser : (나의 총 예산대비 오늘까지 쓴 금액 비율) / (다른 유저들의 총 예산대비 오늘까지 쓴 금액 비율) 의 백분율
+
+- 위의 모든 통계들은 분자는 계산할 때마다 가변적이지만, 분모는 하룻동안은 고정적입니다. -> 따라서 분모는 하룻동안 캐싱하여 활용합니다.
+  <details>
+  <summary>지출 통계 - click</summary>
+   
+   ![통계](https://github.com/Yonge2/My-Wallet-Manager/assets/99579139/4fa32500-cf67-4e0a-8a6c-2a9a0b82d7ce)
+  </details>
 
 ## 회고
