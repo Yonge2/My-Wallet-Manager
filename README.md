@@ -4,6 +4,14 @@
 
 본 서비스는 사용자들이 개인 재무를 관리하고 지출을 추적하는 데 도움을 주는 애플리케이션입니다. 이 앱은 **사용자들이 예산을 설정**하고 **지출을 모니터링**하며 재무 목표를 달성하는 데 도움이 됩니다.
 
+<br/>
+
+## 목차
+
+[1. 사용기술](#사용-기술)  
+ [2. 기능 목록](#기능)  
+ [3. 프로젝트 분석 및 계획](#분석-및-프로젝트-계획)
+
 ## 사용 기술
 
 <img src="https://img.shields.io/badge/Node.js-339933?style=flat-square&logo=Node.js&logoColor=white"/> <img src="https://img.shields.io/badge/Typescript-3178C6?style=flat-square&logo=Typescript&logoColor=white"/> <img src="https://img.shields.io/badge/nestjs-E0234E?style=flat-square&logo=nestjs&logoColor=white"/>
@@ -12,25 +20,38 @@
 
 <img src="https://img.shields.io/badge/JWT-000000?style=flat-square&logo=jsonwebtokens&logoColor=white"/>
 
-## 기능
+<br/>
 
-- 유저 JWT
+## 기능 요약
+
+- 유저 인증
+  - JWT를 이용한 stateless 유저 인증
+  - accessToken과 refreshToken을 통한 관리
 - 예산 설정
-- (예산 설정이 어렵다면?) 예산 설정 추천
+  - 총 예산과 카테고리에 맞게 각 예산을 지정
+- 예산 설정 추천
+  - 예산을 설정한 모든 유저의 평균치를 받음
 - 지출 기록 추적 (생성 / 조회 / 수정 / 삭제)
 - 지출 알림
   - 매일 아침 지출 권장 예산
   - 매일 저녁 지출 결산과 분석
 - 지출 통계
-  - TBD
+  - 지난 달의 오늘까지의 사용 금액 / 대비 / 이번 달의 오늘까지의 사용 금액
+  - 여태 까지의 같은 요일 사용 금액 평균 /대비/ 오늘 사용 금액
+  - 다른 유저의 예산 사용률 /대비/ 나의 예산 사용률
+
+<br/>
 
 ## 프로젝트 분석 및 계획
 
-### 분석 및 프로젝트 계획
-
 - [요구사항 분석 후 이슈생성](https://github.com/Yonge2/My-Wallet-Manager/issues)
 - [github 프로젝트 기능, 로드맵 생성](https://github.com/users/Yonge2/projects/5)
-  //TODO 사진 추가하기
+
+  - <details>
+     <summary>로드맵 보기 - click</summary>
+
+    ![loadmap](https://github.com/Yonge2/My-Wallet-Manager/assets/99579139/c623a701-c884-4734-97c6-b89cde87d9a4)
+    </details>
 
 - [프로젝트 분석 및 전체 계획 과정](https://github.com/Yonge2/My-Wallet-Manager/issues/1)
 
@@ -38,9 +59,11 @@
 
 ![mywallet-erd](https://github.com/Yonge2/My-Wallet-Manager/assets/99579139/91d15f06-5ce3-470b-960e-4d7c049be3b1)
 
+<br/>
+
 ## 구현과 로직
 
-간단한 구현 의도와 함께 순서도를 확인할 수 있습니다.
+### 구현 의도와 함께 토글을 펼치면 순서도를 확인할 수 있습니다.
 
 ### <로그인>
 
@@ -126,3 +149,19 @@
   </details>
 
 ## 회고
+
+### 카테고리 항목 자료형 json -> string 예정
+
+- 현재 설정 : 가변적인 설정, json
+
+```
+ budget_field (예산 설정)
+ {
+   주거비 : 30000
+   식비 : 40000
+   기타 : 10000
+ }
+```
+
+- 변경설정 : 고정적인 설정, string ...
+  /변경 후 추가하기/
