@@ -12,25 +12,22 @@ const MAILER_PASSWORD = process.env.MAILER_PASSWORD || ('' as string)
 const REDIS_ALRAM_KEY = 'ALRAM'
 
 @Injectable()
-export class AlramService {
+export class BePayService {
   @InjectRepository(User)
-  private readonly repo: Repository<User>
+  private repo: Repository<User>
 
   // 추천 예산 : 총 예산-(해당 월의 여태까지 사용한 총 예산)/남은 일수, 카테고리1/총예산, 카테고리2/총예산, ...
   // 이후 곱해서 전송
   // 그리고 캐싱해서 저녁시간에 써먹기
   // 이유: 어플리케이션 특성상 예산 설정 및 지출 등 아침에는 부하가 적을 것으로 예상
-  //CronExpression.EVERY_DAY_AT_7AM
-  @Cron('30 * * * * *', { name: 'bePay', timeZone: 'Asia/Seoul' })
+  @Cron(CronExpression.EVERY_DAY_AT_8AM, { name: 'bePay', timeZone: 'Asia/Seoul' })
   async bePay() {
-    console.log('run scheduler')
     //[{name, email, totalAmount(목표 예산 금액), sum(여태 이번달 쓴 금액), leftAmount(오늘 추천 금액)}]
     const bePayData = await this.repo.query(
       `select u.name as name, u.email as email, s.total_amount as totalAmount, SUM(w.amount) as sum,
-       (s.total_amount-SUM(w.amount))/(30-DATE_FORMAT(NOW(), '%d'))as leftAmount 
+       (s.total_amount-SUM(w.amount))/(30-DATE_FORMAT(NOW(), '%d'))as leftAmount
        from user u join set_budget s on u.id=s.user_id join wallet_history w on u.id=w.user_id group by w.user_id`,
     )
-    console.log(bePayData)
 
     bePayData.forEach(
       async (ele: { name: string; email: string; totalAmount: number; sum: number; leftAmount: number }) => {
@@ -44,16 +41,22 @@ export class AlramService {
     )
     return
   }
+}
+
+@Injectable()
+export class PaidService {
+  @InjectRepository(User)
+  private repo: Repository<User>
 
   // 오늘 결산, 오늘 쓴 금액/써야했을 금액, 위험도
-  @Cron(CronExpression.EVERY_DAY_AT_8PM, { name: 'bePay' })
+  @Cron(CronExpression.EVERY_DAY_AT_8PM, { name: 'ePay', timeZone: 'Asia/Seoul' })
   async piad() {
     const yesterday = dayjs().subtract(1, 'd').format('YYYY-MM-DD')
     const tomorrow = dayjs().add(1, 'd').format('YYYY-MM-DD')
     const todayPaid = await this.repo.query(
       //오늘 쓴 총 금액 { email, sum }
-      `select u.name as name, u.email as email, SUM(w.amount) as paid from user u join wallet_history w on u.id=w.user_id 
-      where w.createdAt > '${yesterday}' and w.createdAt < '${tomorrow}' group by user_id;`,
+      `select u.name as name, u.email as email, SUM(w.amount) as paid from user u join wallet_history w on u.id=w.user_id
+        where w.createdAt > '${yesterday}' and w.createdAt < '${tomorrow}' group by user_id;`,
     )
 
     todayPaid.forEach(async (ele: { name: string; email: string; paid: number }) => {
@@ -72,6 +75,7 @@ export class AlramService {
   }
 }
 
+//메일 전송 nodemailer
 const sendMail = async (mailObj) => {
   const mailTransport = nodemailer.createTransport(mailObj.createMailObj)
 
@@ -84,6 +88,7 @@ const sendMail = async (mailObj) => {
   })
 }
 
+//메일 전송 설정
 const mailObj = async (name: string, email: string, topic: string, data) => {
   const title = `[My Wallet Manager] ${name}님의 오늘 ${topic}을 알려드릴게요!` //권장 예산 or 사용 내역
   const text = (topic: string, data) => {
