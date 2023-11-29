@@ -9,8 +9,11 @@
 ## 목차
 
 [1. 사용기술](#사용-기술)  
- [2. 기능 목록](#기능)  
- [3. 프로젝트 분석 및 계획](#분석-및-프로젝트-계획)
+[2. 기능 목록](#기능-요약)  
+[3. 프로젝트 분석 및 계획](#프로젝트-분석-및-계획)  
+[4. 구현과 로직](#구현과-로직)  
+[5. API Docs](#api-docs)  
+[6. 프로젝트 후](#프로젝트-후)
 
 ## 사용 기술
 
@@ -18,7 +21,7 @@
 
 <img src="https://img.shields.io/badge/MySQL-4479A1?style=flat-square&logo=MySQL&logoColor=white"/> <img src="https://img.shields.io/badge/TypeORM-000000?style=flat-square&logo=&logoColor=white"/> <img src="https://img.shields.io/badge/Redis-DC382D?style=flat-square&logo=Redis&logoColor=white"/>
 
-<img src="https://img.shields.io/badge/JWT-000000?style=flat-square&logo=jsonwebtokens&logoColor=white"/>
+<img src="https://img.shields.io/badge/JWT-000000?style=flat-square&logo=jsonwebtokens&logoColor=white"/> <img src="https://img.shields.io/badge/Swagger-85EA2D?style=flat-square&logo=swagger&logoColor=white"/>
 
 <br/>
 
@@ -47,11 +50,7 @@
 - [요구사항 분석 후 이슈생성](https://github.com/Yonge2/My-Wallet-Manager/issues)
 - [github 프로젝트 기능, 로드맵 생성](https://github.com/users/Yonge2/projects/5)
 
-  - <details>
-     <summary>로드맵 보기 - click</summary>
-
-    ![loadmap](https://github.com/Yonge2/My-Wallet-Manager/assets/99579139/c623a701-c884-4734-97c6-b89cde87d9a4)
-    </details>
+![loadmap](https://github.com/Yonge2/My-Wallet-Manager/assets/99579139/c623a701-c884-4734-97c6-b89cde87d9a4)
 
 - [프로젝트 분석 및 전체 계획 과정](https://github.com/Yonge2/My-Wallet-Manager/issues/1)
 
@@ -63,21 +62,23 @@
 
 ## 구현과 로직
 
-### 구현 의도와 함께 토글을 펼치면 순서도를 확인할 수 있습니다.
-
-### <로그인>
+## <로그인>
 
 - 로그인으로 토큰을 발급합니다. <br>
 
   ![로그인](https://github.com/Yonge2/My-Wallet-Manager/assets/99579139/aa7698a1-90b7-4859-aeda-61ad7fa9b2e9)
 
-### <인증 작업>
+  <br/>
+
+## <인증 작업>
 
 - 접근 권한이 필요한 작업에는 토큰 검증 미들웨어를 사용
 
   ![토큰검증](https://github.com/Yonge2/My-Wallet-Manager/assets/99579139/07dd5159-47da-4a6a-8b0f-b6d967e77d09)
 
-### <예산 설정>
+<br/>
+
+## <예산 설정>
 
 - 사용자가 예산을 수동으로 설정합니다.
 - 참여한 인원에 따라 설정한 총 예산과 각 항목에 가중치를 부여하여 평균을 계산하여 redis에 저장합니다. (이후, 예산 추천을 위한 데이터)
@@ -87,18 +88,22 @@
 
 ![예산 설정](https://github.com/Yonge2/My-Wallet-Manager/assets/99579139/6b36ba2c-a01e-47b3-bc4d-a11ee347d473)
 
-### <예산 추천>
+<br/>
+
+## <예산 추천>
 
 - 예산 설정 시, 캐싱된 데이터를 사용합니다.
 - <예산 설정>의 문제점과 마찬가지로, 이후 서버 꺼졌을 때를 대비 해야합니다.
 
 ![예산 추천](https://github.com/Yonge2/My-Wallet-Manager/assets/99579139/76bfe9db-5062-4e36-9e59-951dad0d9568)
 
-### <알림>
+<br/>
+
+## <알림>
 
 ![email_1](https://github.com/Yonge2/My-Wallet-Manager/assets/99579139/39b6210f-6cca-4a9c-85a8-1fa8be1ba396)
 
-#### 오전 8시 - 오늘의 권장 예산 알림
+### 오전 8시 - 오늘의 권장 예산 알림
 
 ![email_2](https://github.com/Yonge2/My-Wallet-Manager/assets/99579139/21ce00bc-d409-414d-9162-db995b43a83c)
 
@@ -106,7 +111,7 @@
 - 금일 사용권장 금액은 (총예산-사용예산)/남은일수로 계산하며, 일정치 이하로 남았을 경우, 최소금액을 발송합니다.
 - 권장금액을 목표금액으로 설정하고 redis에 캐싱합니다. (삭제 주기는 오후 8시 이후)
 
-#### 오후 8시 - 오늘의 지출 결산 알림
+### 오후 8시 - 오늘의 지출 결산 알림
 
 ![email_3](https://github.com/Yonge2/My-Wallet-Manager/assets/99579139/b9f7b71c-8f9f-4c09-a7d0-14d3e62d7a99)
 
@@ -116,7 +121,9 @@
 
 ![스케줄러](https://github.com/Yonge2/My-Wallet-Manager/assets/99579139/9b2c5df5-9be4-4d30-aa1c-04b4e8367849)
 
-### <지출 통계>
+<br/>
+
+## <지출 통계>
 
 - path param을 이용하여, bymonth, byweek, byuser 로 통계를 볼 수 있습니다.
 - bymonth : (이번 달의 오늘까지 쓴 금액 / 지난 달의 오늘까지 쓴 금액) 의 백분율
@@ -127,6 +134,8 @@
 
 ![통계](https://github.com/Yonge2/My-Wallet-Manager/assets/99579139/4fa32500-cf67-4e0a-8a6c-2a9a0b82d7ce)
 
+<br/>
+
 ## API Docs
 
 - url : http://localhost:3000/api-docs#/
@@ -135,6 +144,8 @@
 
   ![스웨거](https://github.com/Yonge2/My-Wallet-Manager/assets/99579139/5f449b6d-5264-4050-b7f3-0480f109c296)
   </details>
+
+<br/>
 
 ## 프로젝트 후
 
