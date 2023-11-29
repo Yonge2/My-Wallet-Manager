@@ -26,7 +26,6 @@ export class UserController {
   })
   @ApiResponse({ status: 401, description: '회원가입 실패' })
   signup(@Body() signupDto: SignupDto) {
-    //todo signup
     return this.userService.signup(signupDto)
   }
 
