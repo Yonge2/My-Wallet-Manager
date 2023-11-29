@@ -75,7 +75,7 @@ export class PaysController {
   }
 
   @ApiBearerAuth()
-  @ApiOperation({ summary: '상세 지출 내역', description: '상세 지출 내역 조회' })
+  @ApiOperation({ summary: '지출 내역 수정' })
   @ApiParam({
     name: 'id',
     required: true,
@@ -94,7 +94,7 @@ export class PaysController {
   }
 
   @ApiBearerAuth()
-  @ApiOperation({ summary: '상세 지출 내역', description: '상세 지출 내역 조회' })
+  @ApiOperation({ summary: '지출 내역 삭제' })
   @ApiParam({
     name: 'id',
     required: true,
