@@ -68,20 +68,14 @@
 ### <로그인>
 
 - 로그인으로 토큰을 발급합니다. <br>
-   <details>
-   <summary>예산 설정 순서도 보기 - click</summary>
 
   ![로그인](https://github.com/Yonge2/My-Wallet-Manager/assets/99579139/aa7698a1-90b7-4859-aeda-61ad7fa9b2e9)
-  </details>
 
 ### <인증 작업>
 
 - 접근 권한이 필요한 작업에는 토큰 검증 미들웨어를 사용
-  <details>
-   <summary>예산 설정 순서도 보기 - click</summary>
 
   ![토큰검증](https://github.com/Yonge2/My-Wallet-Manager/assets/99579139/07dd5159-47da-4a6a-8b0f-b6d967e77d09)
-  </details>
 
 ### <예산 설정>
 
@@ -91,21 +85,14 @@
 - 장점 : 추가 DB 작업이 필요없음, 이후 작업이 상당히 빠름
 - 단점 : 서버가 꺼지면, 크리티컬한 문제가 발생. -> 이후, DB에 저장하거나 직접 통계 구하는 방법 추가 예정.
 
-  <details>
-  <summary>예산 설정 순서도 보기 - click</summary>
-
-  ![예산 설정](https://github.com/Yonge2/My-Wallet-Manager/assets/99579139/6b36ba2c-a01e-47b3-bc4d-a11ee347d473)
-  </details>
+![예산 설정](https://github.com/Yonge2/My-Wallet-Manager/assets/99579139/6b36ba2c-a01e-47b3-bc4d-a11ee347d473)
 
 ### <예산 추천>
 
 - 예산 설정 시, 캐싱된 데이터를 사용합니다.
 - <예산 설정>의 문제점과 마찬가지로, 이후 서버 꺼졌을 때를 대비 해야합니다.
-  <details>
-  <summary>예산 추천 순서도 보기 - click</summary>
 
-  ![예산 추천](https://github.com/Yonge2/My-Wallet-Manager/assets/99579139/76bfe9db-5062-4e36-9e59-951dad0d9568)
-  </details>
+![예산 추천](https://github.com/Yonge2/My-Wallet-Manager/assets/99579139/76bfe9db-5062-4e36-9e59-951dad0d9568)
 
 ### <알림>
 
@@ -127,12 +114,7 @@
 - 위험도는 사용 금액/목표 금액의 백분율로 계산합니다.
 - 목표 금액은 유저마다 redis에 캐싱된 데이터를 이용합니다.
 
-<details>
-  <summary>권장 예산 알림 및 결산 알림 순서도 보기 - click</summary>
-
 ![스케줄러](https://github.com/Yonge2/My-Wallet-Manager/assets/99579139/9b2c5df5-9be4-4d30-aa1c-04b4e8367849)
-
-</details>
 
 ### <지출 통계>
 
@@ -142,26 +124,33 @@
 - byuser : (나의 총 예산대비 오늘까지 쓴 금액 비율) / (다른 유저들의 총 예산대비 오늘까지 쓴 금액 비율) 의 백분율
 
 - 위의 모든 통계들은 분자는 계산할 때마다 가변적이지만, 분모는 하룻동안은 고정적입니다. -> 따라서 분모는 하룻동안 캐싱하여 활용합니다.
-  <details>
-  <summary>지출 통계 - click</summary>
-   
-   ![통계](https://github.com/Yonge2/My-Wallet-Manager/assets/99579139/4fa32500-cf67-4e0a-8a6c-2a9a0b82d7ce)
+
+![통계](https://github.com/Yonge2/My-Wallet-Manager/assets/99579139/4fa32500-cf67-4e0a-8a6c-2a9a0b82d7ce)
+
+## API Docs
+
+- url : http://localhost:3000/api-docs#/
+- <details>
+    <summary> Swagger Ui </summary>
+
+  ![스웨거](https://github.com/Yonge2/My-Wallet-Manager/assets/99579139/5f449b6d-5264-4050-b7f3-0480f109c296)
   </details>
 
-## 회고
+## 프로젝트 후
 
-### 카테고리 항목 자료형 json -> string 예정
+### 의의
 
-- 현재 설정 : 가변적인 설정, json
+- 프로젝트 관리의 효율 상승
 
-```
- budget_field (예산 설정)
- {
-   주거비 : 30000
-   식비 : 40000
-   기타 : 10000
- }
-```
+  - 1.프로젝트 분석 후 task 정리
+  - 2.프로젝트의 task 단위로 issue 생성
+  - 3.일정에 맞추어 issue로 loadmap을 작성
 
-- 변경설정 : 고정적인 설정, string ...
-  /변경 후 추가하기/
+- nestjs를 사용한 첫 프로젝트
+
+  - 하나의 기능을 모듈/컨트롤러/서비스로 나누어 개발 -> 유지보수에 용이
+  - DTO 선언으로 type 안전성 확보와 관리 용이
+  - nest-cli를 통한 개발 능률 상승(directory 구조 알아서 정리)
+
+- 컨벤션
+  - 커밋 컨벤션과 코드 컨벤션을 고려한 개발
