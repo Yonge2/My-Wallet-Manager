@@ -1,22 +1,20 @@
 import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, ManyToOne } from 'typeorm'
 import { User } from './user.entity'
+import { Category } from './category.entity'
 
-@Entity({ name: 'wallet_history' })
-export class WalletHistory {
+@Entity({ name: 'history' })
+export class History {
   @PrimaryGeneratedColumn()
   id: number
 
-  @Column({ length: 20, nullable: false })
-  category: string
-
   @Column({ nullable: false })
-  amount: Number
+  amount: number
 
-  @Column({ length: 50, nullable: true })
+  @Column({ nullable: true })
   memo: string
 
-  @Column({ nullable: false })
-  user_id: number
+  @Column({ default: true })
+  isActive: boolean
 
   @CreateDateColumn()
   createdAt: Date
@@ -26,4 +24,7 @@ export class WalletHistory {
 
   @ManyToOne(() => User, (user) => user.wallethistories)
   user: User
+
+  @ManyToOne(() => Category, (category) => category.history)
+  category: Category
 }
