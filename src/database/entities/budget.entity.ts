@@ -7,12 +7,16 @@ import {
   OneToOne,
   JoinColumn,
   OneToMany,
+  PrimaryColumn,
 } from 'typeorm'
 import { User } from './user.entity'
 import { BudgetCategory } from './budget-category.entity'
 
 @Entity({ name: 'budget' })
 export class Budget {
+  @PrimaryGeneratedColumn()
+  id: number
+
   @Column({ nullable: false })
   total_budget: number
 

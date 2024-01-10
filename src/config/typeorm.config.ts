@@ -14,7 +14,7 @@ export const typeOrmConfig = async (configService: ConfigService): Promise<TypeO
     autoLoadEntities: true,
     synchronize: true,
     // logging: ['query', 'error'],
-    // dropSchema: true,
+    dropSchema: true,
     namingStrategy: new SnakeNamingStrategy(),
     migrations: [__dirname + '/migration/**/*.{ts,js}'],
   }
