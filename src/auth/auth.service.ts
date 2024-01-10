@@ -6,6 +6,7 @@ import { User } from '../database/entities/user.entity'
 import * as bcrypt from 'bcrypt'
 import { JwtService } from '@nestjs/jwt'
 import { ConfigService } from '@nestjs/config'
+import redisClient from 'src/utils/redis'
 
 @Injectable()
 export class AuthService {
@@ -15,6 +16,8 @@ export class AuthService {
     private jwtService: JwtService,
     private configService: ConfigService,
   ) {}
+
+  redisRefreshKey = (id: string) => `refreshToken:${id}`
 
   async login(loginDto: LoginDto) {
     const user = await this.userRepo.findOne({ where: { email: loginDto.email, isActive: true } })
@@ -28,8 +31,12 @@ export class AuthService {
     const accessToken = await this.createAccessToken(payload)
     const refreshToken = await this.createRefreshToken({ id: user.id })
 
+    const key = this.redisRefreshKey(user.id)
+    //시간변경하기
+    await redisClient.set(key, refreshToken, { EX: 180 })
+
     return {
-      access_token: accessToken,
+      accessToken: accessToken,
       refreshToken: refreshToken,
     }
   }
@@ -60,17 +67,26 @@ export class AuthService {
       const verifiedResult = this.jwtService.verify(refreshToken, {
         secret: this.configService.get<string>('JWT_SECRET'),
       })
-      //+redis랑 비교
-      if (verifiedResult && verifiedResult.userId) {
-        const user = await this.userRepo.findOne({
-          select: { id: true, name: true, isManager: true },
-          where: { id: verifiedResult.userId, isActive: true },
-        })
-        return this.createAccessToken(user)
+
+      if (!verifiedResult || !verifiedResult.id) {
+        return new ForbiddenException('권한이 없습니다.')
       }
+
+      const key = this.redisRefreshKey(verifiedResult.id)
+      const refreshTokenInRedis = await redisClient.get(key)
+      if (refreshToken != refreshTokenInRedis) {
+        return new ForbiddenException('권한이 없습니다.')
+      }
+
+      const user = await this.userRepo.findOne({
+        select: { id: true, name: true, isManager: true },
+        where: { id: verifiedResult.id, isActive: true },
+      })
+
+      return this.createAccessToken(user)
     } catch (e) {
       console.log(e)
-      return
+      return new ForbiddenException('권한이 없습니다.')
     }
   }
 }
