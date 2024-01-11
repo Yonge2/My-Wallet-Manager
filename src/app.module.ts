@@ -3,6 +3,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config'
 import { TypeOrmModule } from '@nestjs/typeorm'
 import { typeOrmConfig } from './config/typeorm.config'
 import { UserModule } from './auth/user.module'
+import { CategoriesModule } from './categories/categories.module'
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { UserModule } from './auth/user.module'
       useFactory: async (configService: ConfigService) => await typeOrmConfig(configService),
     }),
     UserModule,
+    CategoriesModule,
   ],
 })
 export class AppModule {}
