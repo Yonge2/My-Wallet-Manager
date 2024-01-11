@@ -1,9 +1,9 @@
 import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common'
 import { CreateCategoryDto } from './dto/create-category.dto'
 import { Repository } from 'typeorm'
-import { Category } from 'src/database/entities/category.entity'
+import { Category } from '../database/entities/category.entity'
 import { InjectRepository } from '@nestjs/typeorm'
-import { UserInfo } from 'src/auth/get-user.decorator'
+import { UserInfo } from '../auth/get-user.decorator'
 
 @Injectable()
 export class CategoriesService {
@@ -14,6 +14,7 @@ export class CategoriesService {
 
   async getCategory() {
     const categories = await this.categoryRepository.find({
+      select: { id: true, category: true },
       where: { isActive: true },
     })
 
@@ -54,10 +55,10 @@ export class CategoriesService {
 
     const deleteCategoryResult = await this.categoryRepository.save(deleteCategory)
 
-    if (!deleteCategory.updatedAt) {
+    if (!deleteCategoryResult.updatedAt) {
       throw new BadRequestException('이미 지워진 데이터이거나, 잘못된 요청.')
     }
 
-    return deleteCategoryResult
+    return
   }
 }
