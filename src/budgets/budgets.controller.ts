@@ -2,8 +2,8 @@ import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@n
 import { BudgetsService } from './budgets.service'
 import { CreateBudgetDto } from './dto/create-budget.dto'
 import { UpdateBudgetDto } from './dto/update-budget.dto'
-import { JwtAuthGuard } from 'src/auth/jwt-auth.guard'
-import { GetUser, UserInfo } from 'src/auth/get-user.decorator'
+import { JwtAuthGuard } from '../auth/jwt-auth.guard'
+import { GetUser, UserInfo } from '../auth/get-user.decorator'
 
 @Controller('budgets')
 export class BudgetsController {
@@ -16,24 +16,17 @@ export class BudgetsController {
     return this.budgetsService.createBudget(getUser, createBudgetDto)
   }
 
-  // //개인 예산
-  // @UseGuards(JwtAuthGuard)
-  // @Get()
-  // getBudget(@GetUser() getUser: UserInfo) {
-  //   return this.budgetsService.getBudget(getUser)
-  // }
+  //개인 예산
+  @UseGuards(JwtAuthGuard)
+  @Get()
+  getBudget(@GetUser() getUser: UserInfo) {
+    return this.budgetsService.getBudget(getUser)
+  }
 
-  // //개인 예산 변경
-  // @UseGuards(JwtAuthGuard)
-  // @Patch()
-  // updateBudget(@GetUser() getUser: UserInfo, @Body() updateBudgetDto: UpdateBudgetDto) {
-  //   return this.budgetsService.update(getUser, updateBudgetDto)
-  // }
-
-  // //개인 예산 삭제
-  // @UseGuards(JwtAuthGuard)
-  // @Delete()
-  // deleteBudget(@GetUser() getUser: UserInfo) {
-  //   return this.budgetsService.remove(getUser)
-  // }
+  //개인 예산 변경
+  @UseGuards(JwtAuthGuard)
+  @Patch()
+  updateBudget(@GetUser() getUser: UserInfo, @Body() updateBudgetDto: UpdateBudgetDto) {
+    return this.budgetsService.updateBudget(getUser, updateBudgetDto)
+  }
 }
