@@ -1,22 +1,16 @@
-import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common'
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common'
 import { CreateBudgetDto } from './dto/create-budget.dto'
-import { UpdateBudgetDto } from './dto/update-budget.dto'
+import { UpdateBudgetCategoryDto, UpdateBudgetDto } from './dto/update-budget.dto'
 import { Budget } from '../database/entities/budget.entity'
-import { DataSource, Repository } from 'typeorm'
+import { DataSource } from 'typeorm'
 import { BudgetCategory } from '../database/entities/budget-category.entity'
 import { UserInfo } from '../auth/get-user.decorator'
 import { Category } from '../database/entities/category.entity'
 import { User } from '../database/entities/user.entity'
-import { InjectRepository } from '@nestjs/typeorm'
-import { NotFoundError } from 'rxjs'
 
 @Injectable()
 export class BudgetsService {
-  constructor(
-    private dataSource: DataSource,
-    @InjectRepository(Category)
-    private readonly categoryRepository: Repository<Category>,
-  ) {}
+  constructor(private dataSource: DataSource) {}
 
   /**
    * 카테고리 유효성 검사 -> budget 생성 -> budget-category 생성
@@ -41,23 +35,25 @@ export class BudgetsService {
       const createBudget = await queryRunner.manager.getRepository(Budget).insert(budget)
       const budgetId = createBudget.generatedMaps[0].id
 
-      budgetCategoryObj.forEach(async (category) => {
+      const budgetCategoryPromises = budgetCategoryObj.map(async (category) => {
         const createBudgetCategory = {
           category: { id: category.id, ...new Category() },
           budget: { id: budgetId, ...new Budget() },
           amount: category.amount,
         }
-        return await queryRunner.manager.getRepository(BudgetCategory).insert(createBudgetCategory)
+        return queryRunner.manager.getRepository(BudgetCategory).insert(createBudgetCategory)
       })
+      await Promise.all(budgetCategoryPromises)
 
       await queryRunner.commitTransaction()
+
+      return { success: true }
     } catch (err) {
       console.log('budget-category insert error: ', err)
       queryRunner.rollbackTransaction()
-      throw new InternalServerErrorException('budget 생성 실패, 다시 시도해주세요.')
+      throw err
     } finally {
       await queryRunner.release()
-      return { success: true }
     }
   }
 
@@ -93,51 +89,80 @@ export class BudgetsService {
   }
 
   async updateBudget(getUser: UserInfo, updateBudgetDto: UpdateBudgetDto) {
-    const { totalAmount, ...updateBudgetField } = updateBudgetDto
+    const totalAmount = updateBudgetDto.totalAmount
+
+    const budgetId = await this.dataSource.manager.getRepository(Budget).findOne({
+      select: { id: true },
+      where: { user: { id: getUser.id }, isActive: true },
+    })
 
     const user = { id: getUser.id, name: getUser.name, ...new User() }
-    const budget = { user: user, ...new Budget() }
+    //total_budget 변수명 수정하기
+    const budget = { id: budgetId.id, user, total_budget: totalAmount, ...new Budget() }
 
-    let updateBudgetResult: Budget | undefined
-    let budgetId: number
-    let updateBudgetCategoryResult: BudgetCategory[] = []
-
-    if (totalAmount) {
-      budget.total_budget = totalAmount
-      updateBudgetResult = await this.dataSource.getRepository(Budget).save(budget)
-      budgetId = updateBudgetResult.id
+    const updateBudgetResult = await this.dataSource.getRepository(Budget).save(budget)
+    if (updateBudgetResult.total_budget != totalAmount) {
+      throw new BadRequestException('업데이트 실패, 변경 값 없음.')
     }
-    //여기 테스트할 것. 01-15
-    if (!totalAmount) {
-      const targetBudget = await this.dataSource.manager.getRepository(Budget).findOne({
-        select: { id: true },
-        where: { user: { id: getUser.id } },
-      })
-      budgetId = targetBudget.id
-    }
-
-    const budgetCategoryObj = await this.vaildateCategoryBudget(updateBudgetField)
-    if (budgetCategoryObj.length) {
-      budgetCategoryObj.forEach(async (category) => {
-        const updateBudgetCategory = {
-          category: { id: category.id, ...new Category() },
-          budget: { id: budgetId, ...new Budget() },
-          amount: category.amount,
-        }
-        updateBudgetCategoryResult.push(
-          await this.dataSource.manager.getRepository(BudgetCategory).save(updateBudgetCategory),
-        )
-      })
-    }
-
-    console.log(updateBudgetCategoryResult)
-    console.log(updateBudgetResult)
-
-    if (!updateBudgetCategoryResult.length && !updateBudgetResult) {
-      throw new BadRequestException('업데이트 실패, 다시 시도해주세요.')
-    }
-
     return { success: true }
+  }
+
+  async updateBudgetCategory(getUser: UserInfo, updateBudgetCategory: UpdateBudgetCategoryDto) {
+    //필터링 된 {category-id: amount}[]
+    const category2amount = await this.vaildateCategoryBudget(updateBudgetCategory)
+
+    // { budget-category-id, category-id }[]
+    const originBudgetCategory = await this.dataSource.getRepository(BudgetCategory).find({
+      select: { id: true, category: { id: true } },
+      relations: ['budget', 'category'],
+      where: { budget: { user: { id: getUser.id } }, isActive: true },
+    })
+
+    //update budget 객체들
+    const updateBudgets = category2amount.map(async (ele) => {
+      const budgetCategory = new BudgetCategory()
+      budgetCategory.amount = ele.amount
+
+      //업데이트 대상 id 매칭
+      originBudgetCategory.forEach((originBudget) => {
+        if (ele.id === originBudget.category.id) {
+          budgetCategory.id = originBudget.id
+        }
+      })
+      //새로 추가되는 경우
+      if (!budgetCategory.id) {
+        const budgetId = await this.dataSource.getRepository(Budget).findOne({
+          select: { id: true },
+          where: { user: { id: getUser.id }, isActive: true },
+        })
+        budgetCategory.category = { id: ele.id, ...new Category() }
+        budgetCategory.budget = { id: budgetId.id, ...new Budget() }
+      }
+      return budgetCategory
+    })
+
+    const queryRunner = this.dataSource.createQueryRunner()
+    await queryRunner.connect()
+    await queryRunner.startTransaction()
+
+    try {
+      const updatePromises = updateBudgets.map(async (budget) => {
+        const updateResult = await queryRunner.manager.save(await budget)
+        if (!updateResult.updatedAt) {
+          throw new BadRequestException('업데이트 실패. 변경사항 없음.')
+        }
+      })
+      await Promise.all(updatePromises)
+
+      await queryRunner.commitTransaction()
+
+      return { success: true }
+    } catch (err) {
+      await queryRunner.rollbackTransaction()
+      throw err
+    } finally {
+      await queryRunner.release()
+    }
   }
 
   /**
@@ -147,14 +172,16 @@ export class BudgetsService {
     if (!budgetCategoryField) {
       return []
     }
+    /**
+     * 카테고리 get : {id, category}[] -> 카테고리 : {카테고리1: 예산1, 카테고리2: 예산2} 비교
+     * -> {category-id : 예산}[] 반환
+     */
     const categories = await this.dataSource.manager
       .getRepository(Category)
       .createQueryBuilder('category')
       .select(['category.id', 'category.category'])
       .where('category.is_active = true')
       .getMany()
-
-    console.log(categories)
 
     //DB에 저장된 카테고리 배열
     const categoriesValue = categories.map((value: { id: number; category: string }) => {
