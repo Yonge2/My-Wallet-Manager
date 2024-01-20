@@ -13,6 +13,9 @@ export class History {
   @Column({ nullable: true })
   memo: string
 
+  @Column({ nullable: true })
+  imageUrl: string
+
   @Column({ default: true })
   isActive: boolean
 
