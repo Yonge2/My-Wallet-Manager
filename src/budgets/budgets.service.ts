@@ -7,10 +7,14 @@ import { BudgetCategory } from '../database/entities/budget-category.entity'
 import { UserInfo } from '../auth/get-user.decorator'
 import { Category } from '../database/entities/category.entity'
 import { User } from '../database/entities/user.entity'
+import { BudgetsUtil } from './budgets.util'
 
 @Injectable()
 export class BudgetsService {
-  constructor(private dataSource: DataSource) {}
+  constructor(
+    private dataSource: DataSource,
+    private budgetsUtil: BudgetsUtil,
+  ) {}
 
   /**
    * 카테고리 유효성 검사 -> budget 생성 -> budget-category 생성
@@ -20,7 +24,7 @@ export class BudgetsService {
   async createBudget(getUser: UserInfo, createBudgetDto: CreateBudgetDto) {
     const { totalAmount, ...budgetCategoryField } = createBudgetDto
 
-    const budgetCategoryObj = await this.vaildateCategoryBudget(budgetCategoryField)
+    const budgetCategoryObj = await this.budgetsUtil.vaildateCategoryBudget(budgetCategoryField)
 
     const user = { id: getUser.id, name: getUser.name, ...new User() }
     const budget = { user: user, total_budget: totalAmount, ...new Budget() }
@@ -109,7 +113,7 @@ export class BudgetsService {
 
   async updateBudgetCategory(getUser: UserInfo, updateBudgetCategory: UpdateBudgetCategoryDto) {
     //필터링 된 {category-id: amount}[]
-    const category2amount = await this.vaildateCategoryBudget(updateBudgetCategory)
+    const category2amount = await this.budgetsUtil.vaildateCategoryBudget(updateBudgetCategory)
 
     // { budget-category-id, category-id }[]
     const originBudgetCategory = await this.dataSource.getRepository(BudgetCategory).find({
@@ -163,40 +167,5 @@ export class BudgetsService {
     } finally {
       await queryRunner.release()
     }
-  }
-
-  /**
-   * 각 { 예산 카테고리 : 카테고리별 예산 } 검사 및 매칭
-   */
-  private async vaildateCategoryBudget(budgetCategoryField: { [category: string]: number }) {
-    if (!budgetCategoryField) {
-      return []
-    }
-    /**
-     * 카테고리 get : {id, category}[] -> 카테고리 : {카테고리1: 예산1, 카테고리2: 예산2} 비교
-     * -> {category-id : 예산}[] 반환
-     */
-    const categories = await this.dataSource.manager
-      .getRepository(Category)
-      .createQueryBuilder('category')
-      .select(['category.id', 'category.category'])
-      .where('category.is_active = true')
-      .getMany()
-
-    //DB에 저장된 카테고리 배열
-    const categoriesValue = categories.map((value: { id: number; category: string }) => {
-      return value.category
-    })
-
-    const budgetCategoryObj = Object.keys(budgetCategoryField).map((key) => {
-      const amount = Number(budgetCategoryField[`${key}`])
-      const validCateogryIdx = categoriesValue.indexOf(key)
-
-      if (validCateogryIdx === -1) throw new BadRequestException('사용할 수 없는 카테고리가 포함되어 있습니다.')
-
-      return { id: categories[validCateogryIdx].id, amount: amount }
-    })
-
-    return budgetCategoryObj
   }
 }
