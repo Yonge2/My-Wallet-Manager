@@ -1,13 +1,17 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common'
+import { Controller, Get, Post, Body, Patch, UseGuards } from '@nestjs/common'
 import { BudgetsService } from './budgets.service'
 import { CreateBudgetDto } from './dto/create-budget.dto'
 import { UpdateBudgetCategoryDto, UpdateBudgetDto } from './dto/update-budget.dto'
 import { JwtAuthGuard } from '../auth/jwt-auth.guard'
 import { GetUser, UserInfo } from '../auth/get-user.decorator'
+import { BudgetsRecommendService } from './budgets.recommend.service'
 
 @Controller('budgets')
 export class BudgetsController {
-  constructor(private readonly budgetsService: BudgetsService) {}
+  constructor(
+    private readonly budgetsService: BudgetsService,
+    private budgetsRecommendService: BudgetsRecommendService,
+  ) {}
 
   //개인 예산 설정
   @UseGuards(JwtAuthGuard)
@@ -37,5 +41,11 @@ export class BudgetsController {
   @Patch('/category')
   updateBudgetCategory(@GetUser() getUser: UserInfo, @Body() updateBudgetCategoryDto: UpdateBudgetCategoryDto) {
     return this.budgetsService.updateBudgetCategory(getUser, updateBudgetCategoryDto)
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('/recommend')
+  recommend() {
+    return this.budgetsRecommendService.usersBudgetAverage()
   }
 }
