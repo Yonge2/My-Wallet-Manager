@@ -3,7 +3,7 @@ import { Category } from 'src/database/entities/category.entity'
 import { DataSource } from 'typeorm'
 
 @Injectable()
-export class BudgetsUtil {
+export class UtilCategoryService {
   constructor(private dataSource: DataSource) {}
 
   /**

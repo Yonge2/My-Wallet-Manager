@@ -6,13 +6,13 @@ import { Budget } from '../database/entities/budget.entity'
 import { User } from '../database/entities/user.entity'
 import { Category } from '../database/entities/category.entity'
 import { BudgetCategory } from '../database/entities/budget-category.entity'
-import { BudgetsUtil } from './budgets.util'
+
 import { BudgetsRecommendService } from './budgets.recommend.service'
+import { UtilsModule } from 'src/utils/utils.module'
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Budget, User, Category, BudgetCategory])],
+  imports: [TypeOrmModule.forFeature([Budget, User, Category, BudgetCategory]), UtilsModule],
   controllers: [BudgetsController],
-  providers: [BudgetsService, BudgetsUtil, BudgetsRecommendService],
-  exports: [BudgetsUtil],
+  providers: [BudgetsService, BudgetsRecommendService],
 })
 export class BudgetsModule {}

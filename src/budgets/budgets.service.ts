@@ -7,13 +7,13 @@ import { BudgetCategory } from '../database/entities/budget-category.entity'
 import { UserInfo } from '../auth/get-user.decorator'
 import { Category } from '../database/entities/category.entity'
 import { User } from '../database/entities/user.entity'
-import { BudgetsUtil } from './budgets.util'
+import { UtilCategoryService } from 'src/utils/utils.category.service'
 
 @Injectable()
 export class BudgetsService {
   constructor(
     private dataSource: DataSource,
-    private budgetsUtil: BudgetsUtil,
+    private utilCategoryService: UtilCategoryService,
   ) {}
 
   /**
@@ -24,7 +24,7 @@ export class BudgetsService {
   async createBudget(getUser: UserInfo, createBudgetDto: CreateBudgetDto) {
     const { totalAmount, ...budgetCategoryField } = createBudgetDto
 
-    const budgetCategoryObj = await this.budgetsUtil.vaildateCategoryBudget(budgetCategoryField)
+    const budgetCategoryObj = await this.utilCategoryService.vaildateCategoryBudget(budgetCategoryField)
 
     const user = { id: getUser.id, name: getUser.name, ...new User() }
     const budget = { user: user, total_budget: totalAmount, ...new Budget() }
@@ -113,7 +113,7 @@ export class BudgetsService {
 
   async updateBudgetCategory(getUser: UserInfo, updateBudgetCategory: UpdateBudgetCategoryDto) {
     //필터링 된 {category-id: amount}[]
-    const category2amount = await this.budgetsUtil.vaildateCategoryBudget(updateBudgetCategory)
+    const category2amount = await this.utilCategoryService.vaildateCategoryBudget(updateBudgetCategory)
 
     // { budget-category-id, category-id }[]
     const originBudgetCategory = await this.dataSource.getRepository(BudgetCategory).find({
