@@ -3,7 +3,7 @@ import { CreateHistoryDto } from './dto/create-history.dto'
 import { UpdateHistoryDto } from './dto/update-history.dto'
 import { DataSource } from 'typeorm'
 import { UserInfo } from 'src/auth/get-user.decorator'
-import { BudgetsUtil } from 'src/budgets/budgets.util'
+import { UtilCategoryService } from '../utils/utils.category.service'
 import { User } from 'src/database/entities/user.entity'
 import { Category } from 'src/database/entities/category.entity'
 import { History } from 'src/database/entities/history.entity'
@@ -12,7 +12,7 @@ import { History } from 'src/database/entities/history.entity'
 export class HistoriesService {
   constructor(
     private dataSource: DataSource,
-    private budgetsUtil: BudgetsUtil,
+    private budgetsUtil: UtilCategoryService,
   ) {}
 
   private pageOffset = (page: number) => 20 * (page - 1)
