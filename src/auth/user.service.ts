@@ -23,7 +23,6 @@ export class UserService {
       throw new BadRequestException('이미 가입된 email 입니다.')
     }
 
-    console.log(this.configService.get<number>('SALT_ROUND'))
     const salt = await bcrypt.genSalt(Number(this.configService.get<number>('SALT_ROUND')))
     const hashedPassword = await bcrypt.hash(joinDto.password, salt)
 

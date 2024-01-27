@@ -6,7 +6,7 @@ export const GetUser = createParamDecorator((data: unknown, ctx: ExecutionContex
 })
 
 export interface UserInfo {
-  id: string
+  id: number
   name: string
   isManager: boolean
 }

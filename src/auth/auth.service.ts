@@ -6,7 +6,7 @@ import { User } from '../database/entities/user.entity'
 import * as bcrypt from 'bcrypt'
 import { JwtService } from '@nestjs/jwt'
 import { ConfigService } from '@nestjs/config'
-import redisClient from 'src/utils/redis'
+import redisClient from '../utils/redis'
 
 @Injectable()
 export class AuthService {
@@ -17,7 +17,7 @@ export class AuthService {
     private configService: ConfigService,
   ) {}
 
-  redisRefreshKey = (id: string) => `refreshToken:${id}`
+  redisRefreshKey = (id: number) => `refreshToken:${id}`
 
   async login(loginDto: LoginDto) {
     const user = await this.userRepo.findOne({ where: { email: loginDto.email, isActive: true } })
@@ -33,7 +33,7 @@ export class AuthService {
 
     const key = this.redisRefreshKey(user.id)
     //시간변경하기
-    await redisClient.set(key, refreshToken, { EX: 180 })
+    await redisClient.set(key, refreshToken, { EX: 1800 })
 
     return {
       accessToken: accessToken,
@@ -41,7 +41,7 @@ export class AuthService {
     }
   }
 
-  async createAccessToken(payload: { id: string; name: string; isManager: boolean }) {
+  async createAccessToken(payload: { id: number; name: string; isManager: boolean }) {
     const accessTokenPayload = {
       id: payload.id,
       name: payload.name,
@@ -49,11 +49,11 @@ export class AuthService {
     }
     return this.jwtService.sign(accessTokenPayload, {
       secret: this.configService.get<string>('JWT_SECRET'),
-      expiresIn: '2m', //this.configService.get<string>('ACCESS_TOKEN_EXPIRE'),
+      expiresIn: '30m', //this.configService.get<string>('ACCESS_TOKEN_EXPIRE'),
     })
   }
 
-  async createRefreshToken(payload: { id: string }) {
+  async createRefreshToken(payload: { id: number }) {
     const refreshTokenPayload = { id: payload.id }
 
     return this.jwtService.sign(refreshTokenPayload, {
