@@ -17,7 +17,9 @@ export class StasticsService {
     // if(cachedMonthData){
     //   return
     // }
+    console.log(getUser)
     const month = this.utilDayjs.month()
+    console.log(month)
 
     //방법 1. 커넥션 2번, 분자 / 분모
     const lastMonthData = await this.dataSource
@@ -29,18 +31,18 @@ export class StasticsService {
       .andWhere('h.created_at < :end', { end: month.lastMonthEnd })
       .andWhere('h.is_active=true')
       .groupBy('c.id')
-      .getMany()
+      .execute()
 
     const thisMonthData = await this.dataSource
       .createQueryBuilder(History, 'h')
-      .select(['c.category', 'SUM(h.amount) AS thisMonthSum'])
+      .select(['c.category AS category', 'SUM(h.amount) AS thisMonthSum'])
       .innerJoin(Category, 'c', 'h.category_id = c.id')
       .where('h.user_id = :userId', { userId: getUser.id })
       .andWhere('h.created_at > :start', { start: month.thisMonthStart })
       .andWhere('h.created_at < :end', { end: month.thisMonthEnd })
       .andWhere('h.is_active=true')
       .groupBy('c.id')
-      .getMany()
+      .execute()
 
     console.log(lastMonthData)
     console.log(thisMonthData)
