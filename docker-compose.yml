@@ -1,0 +1,37 @@
+services:
+  app:
+    container_name: mywallet_manager
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    ports:
+      - 3000:3000
+    #db가 먼저 실행 시작
+    environment:
+      - DB_HOST: db
+      - DB_NAME: mywallet_db
+      - DB_USERNAME: mywallet
+      - DB_PASSWORD: 123a
+    depends_on:
+      - db
+    #db가 connection 된 이후 app 실행되도록 wait-for-it 스크립트 활용
+    command:
+      - bash
+      - -c
+      - |
+        /app/wait-for-it.sh db:3306 -s -t 10 -- npm run start
+
+  db:
+    image: mysql:8.0
+    container_name: mywallet_manager_db
+    restart: always
+    ports:
+      - 3306:3306
+    environment:
+      - MYSQL_ROOT_PASSWORD: root
+      - MYSQL_USER: mywallet
+      - MYSQL_PASSWORD: 123a
+      - MYSQL_DB: mywallet_db
+      - TZ: Asia/Seoul
+    volumes:
+      - ./data/mysql/:/var/lib/mysql
