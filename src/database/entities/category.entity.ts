@@ -1,4 +1,4 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, OneToMany } from 'typeorm'
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, OneToMany } from 'typeorm'
 import { BudgetCategory } from './budget-category.entity'
 import { History } from './history.entity'
 
@@ -10,14 +10,8 @@ export class Category {
   @Column({ length: 30, unique: true, nullable: false })
   category: string
 
-  @Column({ default: true })
-  isActive: boolean
-
   @CreateDateColumn()
   createdAt: Date
-
-  @UpdateDateColumn()
-  updatedAt: Date
 
   @OneToMany(() => BudgetCategory, (budgetCategory) => budgetCategory.category)
   budgetCategory: BudgetCategory[]

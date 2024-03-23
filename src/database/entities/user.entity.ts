@@ -3,8 +3,6 @@ import { History } from './history.entity'
 
 @Entity({ name: 'user' })
 export class User {
-  // @PrimaryGeneratedColumn('uuid')
-  // id: string
   @PrimaryGeneratedColumn()
   id: number
 
