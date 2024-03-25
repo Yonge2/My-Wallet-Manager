@@ -16,18 +16,16 @@ export class BudgetsRepository {
     try {
       //insert Budget
       const insertBudgetJob = await queryRunner.manager.insert(Budget, budget)
-      const budgetId = insertBudgetJob.generatedMaps[0].id
+      const budgetId = insertBudgetJob.generatedMaps[0].user_id
 
       //insert Budget-Category[]
       const budgetCategoryJobs = budgetCategoryObj.map(async (categoryBudget) => {
         const createBudgetCategory = {
           category: {
             id: categoryBudget.id,
-            ...new Category(),
           },
           budget: {
-            id: budgetId,
-            ...new Budget(),
+            user: { id: budgetId },
           },
           amount: categoryBudget.amount,
           ...new BudgetCategory(),
@@ -49,17 +47,16 @@ export class BudgetsRepository {
 
   async findMyBudget(userId: number): Promise<
     {
-      budgetId: number
       totalAmount: number
       category: string
       amount: number
     }[]
   > {
     const query = `
-    SELECT b.id AS budgetId, b.total_amount AS totalAmount, c.category, b_c.amount
+    SELECT b.total_amount AS totalAmount, c.category, b_c.amount
     FROM budget b
       JOIN budget_category b_c
-        ON b.id=b_c.budget_id
+        ON b.id=b_c.budget_user_id
       JOIN category c
         ON b_c.category_id=c.id
     WHERE b.user_id=${userId}
@@ -129,7 +126,7 @@ export class BudgetsRepository {
     return await this.dataSource.manager
       .createQueryBuilder(BudgetCategory, 'bc')
       .innerJoin('category', 'c', 'bc.category_id = c.id')
-      .innerJoin('budget', 'b', 'bc.budget_id = b.id')
+      .innerJoin('budget', 'b', 'bc.budget_user_id = b.user_id')
       .select(['c.category as category', 'SUM(bc.amount/b.total_budget)/COUNT(*) as categoryPerTotal'])
       .groupBy('c.id')
       .getRawMany()
