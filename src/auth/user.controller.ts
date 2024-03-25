@@ -1,5 +1,4 @@
-import { Controller, Request, Post, UseGuards, Body, Get, Header } from '@nestjs/common'
-import { AuthGuard } from '@nestjs/passport'
+import { Controller, Request, Post, UseGuards, Body, Get, Headers } from '@nestjs/common'
 import { LoginDto } from './dto/login.dto'
 import { AuthService } from './auth.service'
 import { JwtAuthGuard } from './jwt-auth.guard'
@@ -24,8 +23,7 @@ export class UserController {
   }
 
   @Get('refresh')
-  async refresh(@Request() req: any) {
-    const refreshToken = req.headers.refreshtoken
+  async refresh(@Headers('refresh') refreshToken: string) {
     return this.authService.recreateAccessToken(refreshToken)
   }
 
