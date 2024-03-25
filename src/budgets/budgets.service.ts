@@ -50,7 +50,6 @@ export class BudgetsService {
     const myBudget = {}
 
     const organizeRawBudget = rawMyBudget.map(async (raw) => {
-      myBudget['budgetId'] = raw.budgetId
       myBudget['totalAmount'] = raw.totalAmount
       myBudget[`${raw.category}`] = raw.amount
       return
