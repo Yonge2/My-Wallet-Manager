@@ -1,7 +1,6 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query, HttpCode } from '@nestjs/common'
 import { HistoriesService } from './histories.service'
-import { CreateHistoryDto } from './dto/create-history.dto'
-import { UpdateHistoryDto } from './dto/update-history.dto'
+import { HistoryDto } from './dto/create-history.dto'
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard'
 import { GetUser, UserInfo } from 'src/auth/get-user.decorator'
 
@@ -11,7 +10,7 @@ export class HistoriesController {
 
   @UseGuards(JwtAuthGuard)
   @Post()
-  async createHistroy(@GetUser() getUser: UserInfo, @Body() createHistoryDto: CreateHistoryDto) {
+  async createHistroy(@GetUser() getUser: UserInfo, @Body() createHistoryDto: HistoryDto) {
     return await this.historiesService.createHistory(getUser, createHistoryDto)
   }
 
@@ -30,15 +29,11 @@ export class HistoriesController {
   @HttpCode(201)
   @UseGuards(JwtAuthGuard)
   @Patch(':id')
-  async updateHistory(
-    @GetUser() getUser: UserInfo,
-    @Param('id') id: string,
-    @Body() updateHistoryDto: UpdateHistoryDto,
-  ) {
+  async updateHistory(@GetUser() getUser: UserInfo, @Param('id') id: string, @Body() updateHistoryDto: HistoryDto) {
     return await this.historiesService.updateHistory(getUser, +id, updateHistoryDto)
   }
 
-  @HttpCode(201)
+  @HttpCode(204)
   @UseGuards(JwtAuthGuard)
   @Delete(':id')
   async deleteHistory(@GetUser() getUser: UserInfo, @Param('id') id: string) {

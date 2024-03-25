@@ -1,27 +1,18 @@
-import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common'
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common'
 import { CreateCategoryDto } from './dto/create-category.dto'
-import { Repository } from 'typeorm'
 import { Category } from '../database/entities/category.entity'
-import { InjectRepository } from '@nestjs/typeorm'
 import { UserInfo } from '../auth/get-user.decorator'
+import { CategoriesRepository } from './categories.repository'
 
 @Injectable()
 export class CategoriesService {
-  constructor(
-    @InjectRepository(Category)
-    private readonly categoryRepository: Repository<Category>,
-  ) {}
+  constructor(private readonly categoryRepository: CategoriesRepository) {}
 
-  async getCategory() {
-    const categories = await this.categoryRepository.find({
-      select: { id: true, category: true },
-      where: { isActive: true },
-    })
-
+  async getCategories() {
+    const categories = await this.categoryRepository.findCategories()
     if (!categories.length) {
-      throw new NotFoundException('카테고리 준비중')
+      throw new HttpException('카테고리 준비중', HttpStatus.NOT_FOUND)
     }
-
     return categories
   }
 
@@ -29,13 +20,16 @@ export class CategoriesService {
     // if (!user.isManager) {
     //   throw new ForbiddenException('관리자가 아닙니다.')
     // }
-
-    try {
-      const createCategoryResult = await this.categoryRepository.insert(createCategoryDto)
-      return createCategoryResult
-    } catch (err) {
-      console.log(err)
-      throw new BadRequestException('')
+    const category = {
+      ...createCategoryDto,
+      ...new Category(),
+    }
+    const createCategoryResult = await this.categoryRepository.createCategory(category)
+    if (!createCategoryResult) {
+      throw new HttpException('삽입 하지 못함.', HttpStatus.INTERNAL_SERVER_ERROR)
+    }
+    return {
+      success: true,
     }
   }
 
@@ -44,19 +38,9 @@ export class CategoriesService {
     //   throw new ForbiddenException('관리자가 아닙니다.')
     // }
 
-    const isExistCategory = await this.categoryRepository.findOne({ where: { id: id } })
-    if (!isExistCategory) {
-      throw new NotFoundException('해당 카테고리 없음.')
-    }
-
-    const deleteCategory = new Category()
-    deleteCategory.id = id
-    deleteCategory.isActive = false
-
-    const deleteCategoryResult = await this.categoryRepository.save(deleteCategory)
-
-    if (!deleteCategoryResult.updatedAt) {
-      throw new BadRequestException('이미 지워진 데이터이거나, 잘못된 요청.')
+    const removeCategoryReuslt = await this.categoryRepository.removeCategory(id)
+    if (!removeCategoryReuslt) {
+      throw new HttpException('데이터를 삭제하지 못했습니다.', HttpStatus.BAD_REQUEST)
     }
 
     return

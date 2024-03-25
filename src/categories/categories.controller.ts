@@ -15,7 +15,7 @@ export class CategoriesController {
   @UseGuards(JwtAuthGuard)
   @Get()
   getCategories() {
-    return this.categoriesService.getCategory()
+    return this.categoriesService.getCategories()
   }
 
   @UseGuards(JwtAuthGuard)

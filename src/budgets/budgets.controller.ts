@@ -4,14 +4,10 @@ import { CreateBudgetDto } from './dto/create-budget.dto'
 import { UpdateBudgetCategoryDto, UpdateBudgetDto } from './dto/update-budget.dto'
 import { JwtAuthGuard } from '../auth/jwt-auth.guard'
 import { GetUser, UserInfo } from '../auth/get-user.decorator'
-import { BudgetsRecommendService } from './budgets.recommend.service'
 
 @Controller('budgets')
 export class BudgetsController {
-  constructor(
-    private readonly budgetsService: BudgetsService,
-    private budgetsRecommendService: BudgetsRecommendService,
-  ) {}
+  constructor(private readonly budgetsService: BudgetsService) {}
 
   //개인 예산 설정
   @UseGuards(JwtAuthGuard)
@@ -24,7 +20,7 @@ export class BudgetsController {
   @UseGuards(JwtAuthGuard)
   @Get()
   getBudget(@GetUser() getUser: UserInfo) {
-    return this.budgetsService.getBudget(getUser)
+    return this.budgetsService.getMyBudget(getUser)
   }
 
   /**개인 예산 변경
@@ -46,6 +42,6 @@ export class BudgetsController {
   @UseGuards(JwtAuthGuard)
   @Get('/recommend')
   recommend() {
-    return this.budgetsRecommendService.usersBudgetAverage()
+    return this.budgetsService.usersBudgetAverage()
   }
 }

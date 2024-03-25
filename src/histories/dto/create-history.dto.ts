@@ -1,6 +1,6 @@
 import { IsOptional, IsString } from 'class-validator'
 
-export class CreateHistoryDto {
+export class HistoryDto {
   @IsOptional()
   @IsString()
   memo: string

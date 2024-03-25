@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common'
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common'
 import { Category } from 'src/database/entities/category.entity'
 import { DataSource } from 'typeorm'
 
@@ -8,33 +8,26 @@ export class UtilCategoryService {
 
   /**
    * 각 { 예산 카테고리(id) : 카테고리별 예산 } 검사 및 매칭
+   * ex. { '주거비': 500 } -> '주거비' 카테고리 확인 -> { 1 : 500 } 으로 반환 (주거비의 category_id가 1일 경우)
    * front-end에서 처리해도 좋은 기능, back-end에서 처리할 경우 필요
+   * @returns {id: number, amount:number}[]
    */
   async vaildateCategoryBudget(budgetCategoryField: { [category: string]: any }) {
     if (!budgetCategoryField) {
       return []
     }
-    /**
-     * 카테고리 get : {id, category}[] -> 카테고리 : {카테고리1(string) : 예산1, 카테고리2(string) : 예산2} 비교
-     * -> {category-id : 예산}[] 반환
-     */
-    const categories = await this.dataSource.manager
-      .getRepository(Category)
-      .createQueryBuilder('category')
-      .select(['category.id', 'category.category'])
-      .where('category.is_active = true')
-      .getMany()
-
-    //DB에 저장된 카테고리 배열
+    const categories = await this.dataSource.manager.find(Category)
     const categoriesValue = categories.map((value: { id: number; category: string }) => {
       return value.category
     })
 
-    const budgetCategoryObj = Object.keys(budgetCategoryField).map((key) => {
-      const amount = Number(budgetCategoryField[`${key}`])
-      const validCateogryIdx = categoriesValue.indexOf(key)
+    const budgetCategoryObj = Object.keys(budgetCategoryField).map((category) => {
+      const amount = Number(budgetCategoryField[`${category}`])
+      const validCateogryIdx = categoriesValue.indexOf(category)
 
-      if (validCateogryIdx === -1) throw new BadRequestException('사용할 수 없는 카테고리가 포함되어 있습니다.')
+      if (validCateogryIdx === -1) {
+        throw new Error('사용할 수 없는 카테고리가 포함되어 있습니다.')
+      }
 
       return { id: categories[validCateogryIdx].id, amount: amount }
     })

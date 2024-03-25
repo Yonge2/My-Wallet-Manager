@@ -1,140 +1,111 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common'
-import { CreateHistoryDto } from './dto/create-history.dto'
-import { UpdateHistoryDto } from './dto/update-history.dto'
-import { DataSource } from 'typeorm'
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common'
+import { HistoryDto } from './dto/create-history.dto'
 import { UserInfo } from 'src/auth/get-user.decorator'
 import { UtilCategoryService } from '../utils/utils.category.service'
 import { User } from 'src/database/entities/user.entity'
 import { Category } from 'src/database/entities/category.entity'
 import { History } from 'src/database/entities/history.entity'
+import { HistoriesRepository } from './histories.repository'
 
 @Injectable()
 export class HistoriesService {
   constructor(
-    private dataSource: DataSource,
     private budgetsUtil: UtilCategoryService,
+    private readonly historiesRepository: HistoriesRepository,
   ) {}
 
   private pageOffset = (page: number) => 20 * (page - 1)
-  private GET_LIMIT = 20
 
-  async createHistory(getUser: UserInfo, createHistoryDto: CreateHistoryDto) {
+  /**
+   * 지출내역 생성
+   */
+  async createHistory(getUser: UserInfo, createHistoryDto: HistoryDto) {
     const { memo, imageUrl, ...categoryAmountField } = createHistoryDto
 
-    const categoryId2amount = await this.budgetsUtil.vaildateCategoryBudget(categoryAmountField)
-    if (categoryId2amount.length != 1) {
-      throw new BadRequestException('한 번에 하나의 Wallet-History를 생성할 수 있습니다.')
+    try {
+      const categoryId2amount = await this.budgetsUtil.vaildateCategoryBudget(categoryAmountField)
+      if (categoryId2amount.length != 1) {
+        throw new HttpException('한 번에 하나의 지출내역을 생성할 수 있습니다.', HttpStatus.BAD_REQUEST)
+      }
+
+      const user = { id: getUser.id, ...new User() }
+      const category = { id: categoryId2amount[0].id, ...new Category() }
+      const history = {
+        user: user,
+        category: category,
+        amount: categoryId2amount[0].amount,
+        memo: createHistoryDto.memo,
+        imageUrl: createHistoryDto.imageUrl,
+        ...new History(),
+      }
+
+      const historyInsertResult = await this.historiesRepository.insertHistory(history)
+      if (!historyInsertResult) {
+        throw new HttpException('지출내역 생성 실패', HttpStatus.INTERNAL_SERVER_ERROR)
+      }
+      return {
+        success: true,
+      }
+    } catch (err) {
+      console.log('createHistory service err : ', err)
+      throw new HttpException('지출내역 생성 실패', HttpStatus.INTERNAL_SERVER_ERROR)
     }
-
-    const user = { id: getUser.id, ...new User() }
-    const category = { id: categoryId2amount[0].id, ...new Category() }
-    const history = {
-      user: user,
-      category: category,
-      amount: categoryId2amount[0].amount,
-      memo: createHistoryDto.memo,
-      imageUrl: createHistoryDto.imageUrl,
-      ...new History(),
-    }
-
-    const historyResult = await this.dataSource.getRepository(History).insert(history)
-
-    return historyResult
   }
 
+  /**
+   * 지출내역 목록 20개씩
+   */
   async getHistories(getUser: UserInfo, page: number) {
     const offset = this.pageOffset(page)
-
-    const histories = await this.dataSource
-      .createQueryBuilder(History, 'h')
-      .innerJoin('h.category', 'c', 'h.category_id = c.id')
-      .select(['h.id', 'c.category', 'h.amount', 'h.created_at'])
-      .where('user_id = :userId', { userId: getUser.id })
-      .andWhere('h.is_active = true')
-      .limit(this.GET_LIMIT)
-      .offset(offset)
-      .getMany()
-
-    if (!histories.length) {
-      throw new NotFoundException('등록된 내역이 없습니다.')
-    }
-
-    return histories
+    return await this.historiesRepository.findHistories(getUser.id, offset)
   }
 
-  async getHistory(getUser: UserInfo, id: number) {
-    const history = await this.dataSource
-      .createQueryBuilder(History, 'h')
-      .innerJoin('category', 'c', 'h.category_id = c.id')
-      .select([
-        'h.id as id',
-        'c.category as category',
-        'h.amount as amount',
-        'h.memo as memo',
-        'h.image_url',
-        'h.created_at',
-      ])
-      .where('h.user_id = :userId', { userId: getUser.id })
-      .andWhere('h.id = :historyId', { historyId: id })
-      .andWhere('h.is_active = true')
-      .getRawOne()
-
-    if (!history) {
-      throw new NotFoundException('등록된 내역이 없습니다.')
-    }
-    return history
+  /**
+   * 단일 지출내역
+   */
+  async getHistory(getUser: UserInfo, historyId: number) {
+    return await this.historiesRepository.findHistory(getUser.id, historyId)
   }
 
-  async updateHistory(getUser: UserInfo, id: number, updateHistoryDto: UpdateHistoryDto) {
-    let updateHistory = new History()
+  /**
+   * 지출내역 수정
+   */
+  async updateHistory(getUser: UserInfo, historyId: number, updateHistoryDto: HistoryDto) {
+    const { memo, imageUrl, ...categoryAmount } = updateHistoryDto
+    let updateHistory = {}
 
-    const historyId = await this.dataSource.manager.findOne(History, {
-      select: { id: true },
-      where: { id: id, user: { id: getUser.id }, isActive: true },
-    })
-
-    if (!historyId) {
-      throw new NotFoundException('등록된 내역이 없습니다.')
+    if (memo) {
+      updateHistory['memo'] = memo
     }
-
-    const { imageUrl, memo, ...categoryAmount } = updateHistoryDto
-    updateHistory = {
-      id: historyId.id,
-      memo: memo,
-      imageUrl: imageUrl,
-      ...updateHistory,
+    if (imageUrl) {
+      updateHistory['imageUrl'] = imageUrl
     }
-
     if (categoryAmount) {
       const categoryId2amount = await this.budgetsUtil.vaildateCategoryBudget(categoryAmount)
-      updateHistory.amount = categoryId2amount[0].amount
-      updateHistory.category = { id: categoryId2amount[0].id, ...new Category() }
+      updateHistory['amount'] = categoryId2amount[0].amount
+      updateHistory['category'] = { id: categoryId2amount[0].id, ...new Category() }
     }
 
-    const updateResult = await this.dataSource.manager.save(History, updateHistory)
-    if (!updateResult.updatedAt) {
-      throw new BadRequestException('변경 내역 없음. 다시 시도해주세요.')
+    const updateResult = await this.historiesRepository.updateHistory(getUser.id, historyId, updateHistory)
+    if (!updateResult) {
+      throw new HttpException('변경 내역 없음. 다시 시도해주세요.', HttpStatus.BAD_REQUEST)
     }
-
-    return updateResult
+    return {
+      success: true,
+    }
   }
 
-  async deleteHistory(getUser: UserInfo, id: number) {
-    const historyId = await this.dataSource.manager.findOne(History, {
-      select: { id: true },
-      where: { id: id, user: { id: getUser.id }, isActive: true },
-    })
-    if (!historyId) {
-      throw new NotFoundException('등록된 내역이 없습니다.')
+  /**
+   * 지출내역 삭제
+   * soft delete 방법으로 삭제하기 때문에, updateHistroy 함수 재사용
+   */
+  async deleteHistory(getUser: UserInfo, historyId: number) {
+    const deleteHistory = { isActive: false }
+
+    const deleteResult = await this.historiesRepository.updateHistory(getUser.id, historyId, deleteHistory)
+    if (!deleteResult) {
+      throw new HttpException('삭제 실패. 다시 시도해주세요.', HttpStatus.BAD_REQUEST)
     }
-
-    const deleteHistory = { id: historyId.id, isActive: false, ...new History() }
-
-    const deleteResult = await this.dataSource.manager.save(History, deleteHistory)
-    if (!deleteResult.updatedAt) {
-      throw new BadRequestException('변경 내역 없음. 다시 시도해주세요.')
-    }
-
-    return { success: true }
+    return
   }
 }

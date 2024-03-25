@@ -13,9 +13,11 @@ import { BudgetCategory } from './budget-category.entity'
 
 @Entity({ name: 'budget' })
 export class Budget {
-  @OneToOne(() => User)
-  @JoinColumn()
   @PrimaryColumn()
+  userId: number
+
+  @OneToOne(() => User, { cascade: true })
+  @JoinColumn()
   user: User
 
   @Column({ nullable: false })
