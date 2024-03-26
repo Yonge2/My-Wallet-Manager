@@ -1,4 +1,4 @@
-import { Controller, Get, UseGuards } from '@nestjs/common'
+import { Controller, Get, Param, UseGuards } from '@nestjs/common'
 import { StasticsService } from './stastics.service'
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard'
 import { GetUser, UserInfo } from 'src/auth/get-user.decorator'
@@ -18,20 +18,8 @@ export class StasticsController {
    * '/users' = 다른 유저 대비 나의 소비율 (이번달 오늘 까지 쓴 금액 / 이번 달 총 예산)
    */
   @UseGuards(JwtAuthGuard)
-  @Get('/month')
-  byMonth(@GetUser() getUser: UserInfo) {
-    return this.stasticsService.byMonth(getUser)
-  }
-
-  @UseGuards(JwtAuthGuard)
-  @Get('/day')
-  byDay(@GetUser() getUser: UserInfo) {
-    return this.stasticsService.byDay(getUser)
-  }
-
-  @UseGuards(JwtAuthGuard)
-  @Get('/users')
-  byUsers(@GetUser() getUser: UserInfo) {
-    return this.stasticsService.byUsers(getUser)
+  @Get(':method')
+  byMonth(@GetUser() getUser: UserInfo, @Param('method') method: string) {
+    return this.stasticsService.paidStastics(getUser, method)
   }
 }
