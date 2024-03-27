@@ -5,9 +5,9 @@ import { Budget } from '../database/entities/budget.entity'
 import { BudgetCategory } from '../database/entities/budget-category.entity'
 import { UserInfo } from '../auth/get-user.decorator'
 import { User } from '../database/entities/user.entity'
-import { UtilCategoryService } from 'src/utils/utils.category.service'
+import { UtilCategoryService } from '../utils/utils.category.service'
 import { BudgetsRepository } from './budget.repository'
-import { RedisService } from 'src/utils/utils.redis.service'
+import { RedisService } from '../utils/utils.redis.service'
 
 @Injectable()
 export class BudgetsService {
@@ -37,13 +37,11 @@ export class BudgetsService {
       success: true,
     }
   }
-  // 3-24 5:55 여기부터 고치기 시작하셈
 
   async getMyBudget(getUser: UserInfo) {
     const rawMyBudget = await this.budgetsRepository.findMyBudget(getUser.id)
     if (!rawMyBudget.length) {
       return {
-        success: true,
         message: '등록된 예산이 없습니다. 예산을 등록하세요.',
       }
     }
@@ -65,7 +63,7 @@ export class BudgetsService {
       ...new Budget(),
     }
     const updateBudgetResult = await this.budgetsRepository.updateBudget(getUser.id, updateBudgetObj)
-    if (!updateBudgetDto) {
+    if (!updateBudgetResult) {
       throw new HttpException('예산 수정 실패', HttpStatus.INTERNAL_SERVER_ERROR)
     }
     return {
@@ -123,7 +121,7 @@ export class BudgetsService {
     })
     //caching
     const categoryAverageByString = JSON.stringify(categoryAverage)
-    await this.redisService.usersBudgetSet(categoryAverageByString)
+    const redisSetJob = await this.redisService.usersBudgetSet(categoryAverageByString)
 
     return categoryAverage
   }

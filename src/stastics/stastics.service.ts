@@ -1,9 +1,6 @@
 import { Injectable } from '@nestjs/common'
-import { UserInfo } from 'src/auth/get-user.decorator'
-import { Category } from 'src/database/entities/category.entity'
-import { History } from 'src/database/entities/history.entity'
-import { UtilDayjsService } from 'src/utils/utils.dayjs.service'
-import { DataSource } from 'typeorm'
+import { UserInfo } from '../auth/get-user.decorator'
+import { UtilDayjsService } from '../utils/utils.dayjs.service'
 import { StasticsRepository } from './stastics.repository'
 
 //여기부터 시작하면 됨.

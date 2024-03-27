@@ -1,5 +1,5 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common'
-import { Category } from 'src/database/entities/category.entity'
+import { Injectable } from '@nestjs/common'
+import { Category } from '../database/entities/category.entity'
 import { DataSource } from 'typeorm'
 
 @Injectable()

@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common'
-import { History } from 'src/database/entities/history.entity'
+import { History } from '../database/entities/history.entity'
 import { DataSource } from 'typeorm'
 
 @Injectable()
@@ -18,7 +18,10 @@ export class HistoriesRepository {
     }
   }
 
-  async findHistories(userId: number, offset: number) {
+  async findHistories(
+    userId: number,
+    offset: number,
+  ): Promise<{ id: number; category: string; amount: number; date: string }[]> {
     return await this.dataSource.manager
       .createQueryBuilder(History, 'h')
       .innerJoin('h.category', 'c', 'h.category_id = c.id')
@@ -30,8 +33,18 @@ export class HistoriesRepository {
       .getRawMany()
   }
 
-  async findHistory(userId: number, historyId: number) {
-    return await await this.dataSource.manager
+  async findHistory(
+    userId: number,
+    historyId: number,
+  ): Promise<{
+    id: number
+    category: string
+    amount: number
+    memo: string | null
+    imageUrl: string | null
+    date: string
+  }> {
+    return await this.dataSource.manager
       .createQueryBuilder(History, 'h')
       .innerJoin('category', 'c', 'h.category_id = c.id')
       .select([

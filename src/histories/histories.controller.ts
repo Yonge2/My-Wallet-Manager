@@ -36,7 +36,7 @@ export class HistoriesController {
   @HttpCode(204)
   @UseGuards(JwtAuthGuard)
   @Delete(':id')
-  async deleteHistory(@GetUser() getUser: UserInfo, @Param('id') id: string) {
-    return await this.historiesService.deleteHistory(getUser, +id)
+  async removeHistory(@GetUser() getUser: UserInfo, @Param('id') id: string) {
+    return await this.historiesService.removeHistory(getUser, +id)
   }
 }

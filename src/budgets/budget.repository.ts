@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common'
 import { Budget } from '../database/entities/budget.entity'
-import { Category } from '../database/entities/category.entity'
 import { DataSource } from 'typeorm'
 import { BudgetCategory } from '../database/entities/budget-category.entity'
 
@@ -122,12 +121,12 @@ export class BudgetsRepository {
     }
   }
 
-  async calUserBudgets() {
+  async calUserBudgets(): Promise<{ category: string; categoryPerTotal: number }[]> {
     return await this.dataSource.manager
       .createQueryBuilder(BudgetCategory, 'bc')
       .innerJoin('category', 'c', 'bc.category_id = c.id')
       .innerJoin('budget', 'b', 'bc.budget_user_id = b.user_id')
-      .select(['c.category as category', 'SUM(bc.amount/b.total_budget)/COUNT(*) as categoryPerTotal'])
+      .select(['c.category as category', 'SUM(bc.amount/b.total_amount)/COUNT(bc.budget_user_id) as categoryPerTotal'])
       .groupBy('c.id')
       .getRawMany()
   }

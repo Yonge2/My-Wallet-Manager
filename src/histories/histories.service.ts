@@ -1,10 +1,10 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common'
 import { HistoryDto } from './dto/create-history.dto'
-import { UserInfo } from 'src/auth/get-user.decorator'
+import { UserInfo } from '../auth/get-user.decorator'
 import { UtilCategoryService } from '../utils/utils.category.service'
-import { User } from 'src/database/entities/user.entity'
-import { Category } from 'src/database/entities/category.entity'
-import { History } from 'src/database/entities/history.entity'
+import { User } from '../database/entities/user.entity'
+import { Category } from '../database/entities/category.entity'
+import { History } from '../database/entities/history.entity'
 import { HistoriesRepository } from './histories.repository'
 
 @Injectable()
@@ -80,7 +80,7 @@ export class HistoriesService {
     if (imageUrl) {
       updateHistory['imageUrl'] = imageUrl
     }
-    if (categoryAmount) {
+    if (Object.keys(categoryAmount).length) {
       const categoryId2amount = await this.budgetsUtil.vaildateCategoryBudget(categoryAmount)
       updateHistory['amount'] = categoryId2amount[0].amount
       updateHistory['category'] = { id: categoryId2amount[0].id, ...new Category() }
@@ -99,7 +99,7 @@ export class HistoriesService {
    * 지출내역 삭제
    * soft delete 방법으로 삭제하기 때문에, updateHistroy 함수 재사용
    */
-  async deleteHistory(getUser: UserInfo, historyId: number) {
+  async removeHistory(getUser: UserInfo, historyId: number) {
     const deleteHistory = { isActive: false }
 
     const deleteResult = await this.historiesRepository.updateHistory(getUser.id, historyId, deleteHistory)
