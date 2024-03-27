@@ -35,3 +35,10 @@ services:
       - TZ: Asia/Seoul
     volumes:
       - ./data/mysql/:/var/lib/mysql
+
+  redis:
+    image: redis:7.2.3-alpine3.18
+    container_name: mywallet_redis
+    restart: always
+    ports:
+      - 6379:6379
