@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common'
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common'
 import { UserInfo } from '../auth/get-user.decorator'
 import { UtilDayjsService } from '../utils/utils.dayjs.service'
 import { StasticsRepository } from './stastics.repository'
@@ -16,6 +16,9 @@ export class StasticsService {
       case 'month':
         const month = this.utilDayjs.month()
         const { lastMonthData, thisMonthData } = await this.stasticsRepository.calMonthData(getUser.id, month)
+        if (!lastMonthData && !thisMonthData) {
+          throw new HttpException('통계 조회 불가', HttpStatus.NOT_FOUND)
+        }
 
         const monthData = lastMonthData.map((lastMonth) => {
           const data = {

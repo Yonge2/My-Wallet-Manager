@@ -11,7 +11,7 @@ export const setupSwagger = (app: INestApplication) => {
   const option = new DocumentBuilder()
     .setTitle('My-Wallet-Manager API docs')
     .setDescription('My-Wallet-Manager API docs')
-    .setVersion('1.0.0')
+    .setVersion('1.1')
     .addBearerAuth()
     .build()
 
