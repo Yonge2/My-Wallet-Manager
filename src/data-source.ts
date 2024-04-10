@@ -11,9 +11,7 @@ export default new DataSource({
   username: process.env.DB_USERNAME,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
-  entities: [__dirname + '/database/entities/*.{ts,js}'],
-  synchronize: true,
+  entities: [__dirname + '/database/entities/*.entity.{ts,js}'],
   logging: true,
-  timezone: '+09.00',
   namingStrategy: new SnakeNamingStrategy(),
 })
