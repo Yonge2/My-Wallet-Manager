@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common'
 import { DataSource } from 'typeorm'
 import { Category } from '../database/entities/category.entity'
+import { History } from 'src/database/entities/history.entity'
 
 @Injectable()
 export class StasticsRepository {
@@ -30,8 +31,8 @@ export class StasticsRepository {
       .select(['c.category', 'SUM(h.amount) AS lastMonthSum'])
       .innerJoin(Category, 'c', 'h.category_id = c.id')
       .where('h.user_id = :userId', { userId })
-      .andWhere('h.created_at > :start', { lastMonthStart })
-      .andWhere('h.created_at < :end', { lastMonthEnd })
+      .andWhere('h.created_at > :start', { start: lastMonthStart })
+      .andWhere('h.created_at < :end', { end: lastMonthEnd })
       .andWhere('h.is_active=true')
       .groupBy('c.id')
       .getRawMany()
@@ -41,11 +42,11 @@ export class StasticsRepository {
       .select(['c.category AS category', 'SUM(h.amount) AS thisMonthSum'])
       .innerJoin(Category, 'c', 'h.category_id = c.id')
       .where('h.user_id = :userId', { userId })
-      .andWhere('h.created_at > :start', { thisMonthStart })
-      .andWhere('h.created_at < :end', { thisMonthEnd })
+      .andWhere('h.created_at > :start', { start: thisMonthStart })
+      .andWhere('h.created_at < :end', { end: thisMonthEnd })
       .andWhere('h.is_active=true')
       .groupBy('c.id')
-      .getRawOne()
+      .getRawMany()
 
     await queryRunner.release()
     return {
