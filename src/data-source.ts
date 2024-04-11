@@ -12,6 +12,6 @@ export default new DataSource({
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
   entities: [__dirname + '/database/entities/*.entity.{ts,js}'],
-  logging: true,
+  logging: false,
   namingStrategy: new SnakeNamingStrategy(),
 })

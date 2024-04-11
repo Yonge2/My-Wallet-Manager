@@ -5,6 +5,7 @@ import { User } from '../entities/user.entity'
 
 const SET_CATEGORY_NUMBER = 6
 const SET_USER_NUMBER = 200
+const lastmonth = new Date().setMonth(2)
 
 export default setSeederFactory(History, async (faker) => {
   const history = new History()
@@ -12,7 +13,7 @@ export default setSeederFactory(History, async (faker) => {
   history.amount = faker.number.int({ min: 10, max: 1000 }) * 100
   history.memo = faker.commerce.product()
   history.imageUrl = faker.internet.url()
-  history.createdAt = faker.date.recent()
+  history.createdAt = new Date(lastmonth)
   history.category = { id: faker.number.int({ min: 1, max: SET_CATEGORY_NUMBER }), ...new Category() }
   history.user = { id: faker.number.int({ min: 1, max: SET_USER_NUMBER }), ...new User() }
 
