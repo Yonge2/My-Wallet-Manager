@@ -3,7 +3,6 @@ import { UserInfo } from '../auth/get-user.decorator'
 import { UtilDayjsService } from '../utils/utils.dayjs.service'
 import { StasticsRepository } from './stastics.repository'
 
-//여기부터 시작하면 됨.
 @Injectable()
 export class StasticsService {
   constructor(
@@ -41,18 +40,43 @@ export class StasticsService {
       case 'day':
         return
 
-      case 'user':
-        return
+      case 'users':
+        return await this.userStastics3(getUser.id)
 
       default:
         return
     }
 
-    //방법 1. 커넥션 2번, 분자 / 분모
-    //방법 2. subquery를 통한 분자 분모 get, 한 번의 커넥션
-    // const monthData = await this.dataSource
-    //   .createQueryBuilder(History, 'h')
-    //   .select(['c.category', 'SUM(h.amount) AS lastMonthSum'])
-    //방법 3. 조건에 맞는 전체를 그냥 get, 레디스를 이용하던지 하는 방법
+    //방법 1. SUM연산, COUNT연산, SUM연산/COUNT연산 (average) -> 집계함수 총 4번
+    //방법 2. subQuery 활용 : SUN연산, COUNT 연산, sum/count (서브쿼리에서 연산된 것 단순 나누기) -> 집계함수 총 2번
+    //방법 3. data Chunk : 방법 2를 기반, 데이터 1,000개씩 잘라서 조회 및 연산 후 코드 단에서 누적 합계
+
+    // 4/11 테스트 결과 : 천개, 만개, 10만개에서는 차이가 없음.
+  }
+  private async userStastics1(userId) {
+    const month = this.utilDayjs.month()
+    console.log('통계 100,000개 데이터 시작')
+    console.time('MySQL Connection + calculation time')
+    const lastMonthData = await this.stasticsRepository.calUsersData(userId, month)
+    console.timeEnd('MySQL Connection + calculation time')
+    return lastMonthData
+  }
+
+  private async userStastics2(userId) {
+    const month = this.utilDayjs.month()
+    console.log('통계 100,000개 데이터 시작')
+    console.time('MySQL Connection + calculation time')
+    const lastMonthData = await this.stasticsRepository.calUsersData2(userId, month)
+    console.timeEnd('MySQL Connection + calculation time')
+    return lastMonthData
+  }
+
+  private async userStastics3(userId) {
+    const month = this.utilDayjs.month()
+    console.log('통계 100,000개 데이터 시작')
+    console.time('MySQL Connection + calculation time')
+    const lastMonthData = await this.stasticsRepository.calUserData3(month)
+    console.timeEnd('MySQL Connection + calculation time')
+    return lastMonthData
   }
 }
