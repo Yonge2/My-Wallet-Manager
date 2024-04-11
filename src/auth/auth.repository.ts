@@ -27,7 +27,7 @@ export class AuthRepository {
     email: string,
   ): Promise<{ id: number; email: string; password: string; name: string; isManager: boolean }> {
     return await this.dataSource.manager.findOne(User, {
-      select: ['email', 'password', 'name', 'isManager'],
+      select: ['id', 'email', 'password', 'name', 'isManager'],
       where: { email: email, isActive: true },
     })
   }
