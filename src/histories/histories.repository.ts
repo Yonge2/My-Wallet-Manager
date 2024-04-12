@@ -25,7 +25,7 @@ export class HistoriesRepository {
     return await this.dataSource.manager
       .createQueryBuilder(History, 'h')
       .innerJoin('h.category', 'c', 'h.category_id = c.id')
-      .select(['h.id', 'c.category', 'h.amount', 'DATE_FORMAT(h.created_at, %m-%d %H:%i AS date'])
+      .select(['h.id', 'c.category', 'h.amount', `DATE_FORMAT(h.created_at, '%m-%d %H:%i') AS date`])
       .where('user_id = :userId', { userId })
       .andWhere('h.is_active = true')
       .limit(this.GET_LIMIT)
@@ -53,7 +53,7 @@ export class HistoriesRepository {
         'h.amount AS amount',
         'h.memo AS memo',
         'h.image_url AS imageUrl',
-        'DATE_FORMAT(h.created_at, %m-%d %H:%i AS date',
+        `DATE_FORMAT(h.created_at, '%m-%d %H:%i') AS date`,
       ])
       .where('h.user_id = :userId', { userId })
       .andWhere('h.id = :historyId', { historyId })

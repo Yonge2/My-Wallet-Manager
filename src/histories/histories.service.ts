@@ -56,6 +56,7 @@ export class HistoriesService {
    * 지출내역 목록 20개씩
    */
   async getHistories(getUser: UserInfo, page: number) {
+    console.log(page)
     const offset = this.pageOffset(page)
     return await this.historiesRepository.findHistories(getUser.id, offset)
   }

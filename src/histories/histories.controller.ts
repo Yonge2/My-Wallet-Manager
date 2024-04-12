@@ -16,8 +16,9 @@ export class HistoriesController {
 
   @UseGuards(JwtAuthGuard)
   @Get()
-  async getHistories(@GetUser() getUser: UserInfo, @Query('page') page: string) {
-    return await this.historiesService.getHistories(getUser, +page)
+  async getHistories(@GetUser() getUser: UserInfo, @Query('page') page: string | number) {
+    page = page == undefined ? 1 : Number(page)
+    return await this.historiesService.getHistories(getUser, page)
   }
 
   @UseGuards(JwtAuthGuard)
