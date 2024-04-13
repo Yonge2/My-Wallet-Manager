@@ -4,7 +4,7 @@ import dataSource from './data-source'
 import { BudgetCategory } from './database/entities/budget-category.entity'
 
 //삽입 시간 체크용
-//console.log('END', new Date().getHours(), new Date().getMinutes())
+console.log('END', new Date().getHours(), new Date().getMinutes())
 dataSource
   .initialize()
   .then(async () => {

@@ -2,7 +2,7 @@ import { Seeder, SeederFactoryManager } from 'typeorm-extension'
 import { DataSource } from 'typeorm'
 import { History } from '../entities/history.entity'
 
-const SET_HISTORY_NUMBER = 45000
+const SET_HISTORY_NUMBER = 400000
 
 export default class HistorySeeder implements Seeder {
   public async run(dataSource: DataSource, factoryManager: SeederFactoryManager): Promise<any> {
