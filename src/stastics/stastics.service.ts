@@ -55,7 +55,7 @@ export class StasticsService {
   }
   private async userStastics1(userId) {
     const month = this.utilDayjs.month()
-    console.log('통계 100,000개 데이터 시작')
+    console.log('방법 1. 통계 1,000,000개 데이터 시작 // 조건 2023-01-01 ~ 2024-01-01')
     console.time('MySQL Connection + calculation time')
     const lastMonthData = await this.stasticsRepository.calUsersData(userId, month)
     console.timeEnd('MySQL Connection + calculation time')
@@ -64,7 +64,7 @@ export class StasticsService {
 
   private async userStastics2(userId) {
     const month = this.utilDayjs.month()
-    console.log('통계 100,000개 데이터 시작')
+    console.log('방법 2. 통계 1,000,000개 데이터 시작 // 조건 2023-01-01 ~ 2024-01-01')
     console.time('MySQL Connection + calculation time')
     const lastMonthData = await this.stasticsRepository.calUsersData2(userId, month)
     console.timeEnd('MySQL Connection + calculation time')
@@ -73,7 +73,7 @@ export class StasticsService {
 
   private async userStastics3(userId) {
     const month = this.utilDayjs.month()
-    console.log('통계 100,000개 데이터 시작')
+    console.log('방법 3. 통계 1,000,000개 데이터 시작 // 조건 2023-01-01 ~ 2024-01-01')
     console.time('MySQL Connection + calculation time')
     const lastMonthData = await this.stasticsRepository.calUserData3(month)
     console.timeEnd('MySQL Connection + calculation time')
